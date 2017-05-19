@@ -13,16 +13,30 @@ public class Coordonnees
 
 	public Coordonnees(double longitude, double latitude)
 	{
-		_latitude = latitude;
-		_longitude = longitude;
+		if (longitudeOk(longitude) && latitudeOk(latitude)) {
+			_latitude = latitude;
+			_longitude = longitude;
+		}
+
+		else{
+			System.out.println("vous ne pouvez pas créer de ville extraterrestre ici");
+		}
 	}
 
-	public boolean coordonneesOk(double longitude, double latitude)
+	public boolean longitudeOk(double longitude)
 	{
-		if(longitude < 180 || longitude > -180 || latitude < 90 || latitude > -90)
-			return true;
-		else
+		if(longitude > 180 || longitude < -180)
 			return false;
+		else
+			return true;
+	}
+
+	public boolean latitudeOk(double latitude)
+	{
+		if(latitude > 90 || latitude < -90)
+			return false;
+		else
+			return true;
 	}
 
 
@@ -41,12 +55,16 @@ public class Coordonnees
 
 	public void setLatitude(double latitude)
 	{
-		_latitude = latitude;
+		if(latitudeOk(latitude)) {
+			_latitude = latitude;
+		}
 	}
 
 	public void setLongitude(double longitude)
 	{
-		_longitude = longitude;
+		if(longitudeOk(longitude)) {
+			_longitude = longitude;
+		}
 	}
 
 
