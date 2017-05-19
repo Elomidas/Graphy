@@ -57,7 +57,11 @@ public class Ville {
 
 	public void setCoord(Coordonnees coord)
 	{
-		_coord.coordonneesOk(coord.longitude, coord.latitude);
+		if(_coord.coordonneesOk(coord.getLongitude(), coord.getLatitude()))
+		{
+			coord.setLatitude(coord.getLatitude());
+			coord.setLongitude(coord.getLongitude());
+		}
 	}
 
 	public ArrayList<Distance> getDistances()
@@ -77,6 +81,16 @@ public class Ville {
 		_dists.add(dist);
 	}
 
-	public void supprDistance()
+	public void supprDistance(int index)
+	{
+		_dists.remove(index);
+	}
+
+	public void supprDistance(Ville ville)
+	{
+		for(int index=0;index<_dists.size();index++)
+			if()
+			_dists.remove(index);
+	}
 
 }
