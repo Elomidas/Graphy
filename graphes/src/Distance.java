@@ -39,7 +39,9 @@ public class Distance
 	{
 		if((_ville1 != null) && (_ville2 != null))
 		{
-			//calcul
+			double dx = Math.abs(_ville1.getCoord().getLatitude() - _ville2.getCoord().getLatitude());
+			double dy = Math.abs(_ville1.getCoord().getLongitude() - _ville2.getCoord().getLongitude());
+			_distance_pigeon = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 		}
 		else _distance_pigeon = 0;
 	}
