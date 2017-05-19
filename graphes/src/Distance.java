@@ -31,16 +31,19 @@ public class Distance
 
 	protected void calculDistances()
 	{
-		calculDistancePigeon();
-		calculDistanceCoccinelle();
+		calculDistancePigeon();//le pigeon passe par la voie aérienne
+		calculDistanceCoccinelle();//la coccinelle emprunte la route, et fait attention aux voitures
 	}
 
 	protected void calculDistancePigeon()
 	{
-		if((_ville1 != null) && (_ville2 != null))
+		if((_ville1 != null) && (_ville2 != null) && (_ville1 != _ville2))
 		{
+			//Différence de latitude
 			double dx = Math.abs(_ville1.getCoord().getLatitude() - _ville2.getCoord().getLatitude());
+			//Différence de longitude
 			double dy = Math.abs(_ville1.getCoord().getLongitude() - _ville2.getCoord().getLongitude());
+			//Théorème de Pythagore
 			_distance_pigeon = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 		}
 		else _distance_pigeon = 0;
@@ -57,21 +60,23 @@ public class Distance
 
 	public void setVille1(Ville ville)
 	{
-		_ville1 = ville;
-		calculDistances();
+		setVilles(ville, _ville2);
 	}
 
 	public void setVille2(Ville ville)
 	{
-		_ville2 = ville;
-		calculDistances();
+		setVilles(_ville1, ville);
 	}
 
 	public void setVilles(Ville ville1, Ville ville2)
 	{
-		_ville1 = ville1;
-		_ville2 = ville2;
-		calculDistances();
+		boolean b1, b2;
+		if(b1 = (ville1 != _ville1))
+			_ville1 = ville1;
+		if(b2 = (ville2 != _ville2))
+			_ville2 = ville2;
+		if(b1 || b2)
+			calculDistances();
 	}
 
 	//Retourne la ville 1 pour l'index 1, la ville 2 pour l'index 2 et null pour tout autre index

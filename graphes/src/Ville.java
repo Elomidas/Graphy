@@ -8,12 +8,23 @@ public class Ville {
 	private Coordonnees _coord;
 	private ArrayList<Distance> _dists;
 
+	//Ctr défaut
 	public Ville()
 	{
 		_id = 0;
 		_nom = new String();
 		_nbHab = -1;
 		_coord = new Coordonnees();
+		_dists = new ArrayList<Distance>();
+	}
+
+	//Ctr surchargé
+	public Ville(int id, String nom, int nbHab, double coordX, double coordY)
+	{
+		_id = id;
+		_nom = new String(nom);
+		_nbHab = nbHab;
+		_coord = new Coordonnees(coordX, coordY);
 		_dists = new ArrayList<Distance>();
 	}
 
@@ -57,11 +68,10 @@ public class Ville {
 
 	public void setCoord(Coordonnees coord)
 	{
-		if(_coord.coordonneesOk(coord.getLongitude(), coord.getLatitude()))
-		{
-			coord.setLatitude(coord.getLatitude());
-			coord.setLongitude(coord.getLongitude());
-		}
+		_coord.setLatitude(coord.getLatitude());
+		_coord.setLongitude(coord.getLongitude());
+		for(int i=0;i<_dists.size();i++)
+			_dists.get(i).refreshDistances();
 	}
 
 	public ArrayList<Distance> getDistances()
@@ -89,8 +99,28 @@ public class Ville {
 	public void supprDistance(Ville ville)
 	{
 		for(int index=0;index<_dists.size();index++)
-			if()
-			_dists.remove(index);
+		{
+			if(_dists.get(index).getVille(this).equals(ville))
+			{
+				_dists.remove(index);
+				return;
+			}
+		}
+
 	}
+
+	public void supprDistance(Distance distance)
+	{
+		for(int index=0;index<_dists.size();index++)
+		{
+			if(_dists.get(index).equals(distance))
+			{
+				_dists.remove(index);
+				return;
+			}
+		}
+	}
+
+
 
 }
