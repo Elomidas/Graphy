@@ -68,13 +68,10 @@ public class Ville {
 
 	public void setCoord(Coordonnees coord)
 	{
-		if(_coord.coordonneesOk(coord.getLongitude(), coord.getLatitude()))
-		{
-			coord.setLatitude(coord.getLatitude());
-			coord.setLongitude(coord.getLongitude());
-		}
+		_coord.setLatitude(coord.getLatitude());
+		_coord.setLongitude(coord.getLongitude());
 		for(int i=0;i<_dists.size();i++)
-			_dists.get(i).refreshDistance();
+			_dists.get(i).refreshDistances();
 	}
 
 	public ArrayList<Distance> getDistances()
@@ -102,12 +99,28 @@ public class Ville {
 	public void supprDistance(Ville ville)
 	{
 		for(int index=0;index<_dists.size();index++)
+		{
 			if(_dists.get(index).getVille(this).equals(ville))
 			{
 				_dists.remove(index);
 				return;
 			}
+		}
 
 	}
+
+	public void supprDistance(Distance distance)
+	{
+		for(int index=0;index<_dists.size();index++)
+		{
+			if(_dists.get(index).equals(distance))
+			{
+				_dists.remove(index);
+				return;
+			}
+		}
+	}
+
+
 
 }
