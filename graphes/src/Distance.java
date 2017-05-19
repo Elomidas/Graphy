@@ -72,9 +72,21 @@ public class Distance
 	{
 		boolean b1, b2;
 		if(b1 = (ville1 != _ville1))
+		{
+			if(_ville1 != null)
+				_ville1.supprDistance(this);
 			_ville1 = ville1;
+			if(_ville1 != null)
+				_ville1.ajouteDistance(this);
+		}
 		if(b2 = (ville2 != _ville2))
+		{
+			if(_ville2 != null)
+				_ville2.supprDistance(this);
 			_ville2 = ville2;
+			if(_ville2 != null)
+				_ville2.ajouteDistance(this);
+		}
 		if(b1 || b2)
 			calculDistances();
 	}
