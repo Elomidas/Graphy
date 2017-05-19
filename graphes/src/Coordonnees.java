@@ -13,7 +13,7 @@ public class Coordonnees
 
 
 	public boolean coordonneesOk(double longitude, double latitude){
-		if(longitude < 180 || longitude > -180 || latitude < 90 || latitude > 90) return true;
+		if(longitude < 180 || longitude > -180 || latitude < 90 || latitude > -90) return true;
 		else return false;
 	}
 
