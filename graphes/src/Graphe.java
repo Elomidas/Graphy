@@ -13,4 +13,10 @@ public class Graphe
 		_villes = villes;
 	}
 
+	
+  //GETTER & SETTER
+	public ArrayList<Ville> getVilles(){
+		return _villes;
+	}
+
 }
