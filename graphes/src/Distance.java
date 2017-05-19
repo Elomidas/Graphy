@@ -31,8 +31,8 @@ public class Distance
 
 	protected void calculDistances()
 	{
-		calculDistancePigeon();
-		calculDistanceCoccinelle();
+		calculDistancePigeon();//le pigeon passe par la voie aérienne
+		calculDistanceCoccinelle();//la coccinelle emprunte la route, et fait attention aux voitures
 	}
 
 	protected void calculDistancePigeon()
