@@ -93,14 +93,22 @@ public class Distance
 		return null;
 	}
 
+	//Distance à vol d'oiseau
 	public double distancePigeon()
 	{
 		return _distance_pigeon;
 	}
 
+	//Distance en suivant les routes
 	public double distanceCoccinelle()
 	{
 		return _distance_coccinelle;
+	}
+
+	//Recalcule les distances
+	public void refreshDistances()
+	{
+		calculDistances();
 	}
 
 }
