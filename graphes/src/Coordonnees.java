@@ -5,6 +5,10 @@ public class Coordonnees
 	private double _latitude;
 	private double _longitude;
 
+	public Coordonnees(){
+		//
+	}
+
 	public Coordonnees(double longitude, double latitude) {
 		_latitude = latitude;
 		_longitude = longitude;
