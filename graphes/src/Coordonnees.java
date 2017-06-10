@@ -13,12 +13,14 @@ public class Coordonnees
 
 	public Coordonnees(double longitude, double latitude)
 	{
-		if (longitudeOk(longitude) && latitudeOk(latitude)) {
+		if (longitudeOk(longitude) && latitudeOk(latitude))
+		{
 			_latitude = latitude;
 			_longitude = longitude;
 		}
 
-		else{
+		else
+		{
 			System.out.println("vous ne pouvez pas créer de ville extraterrestre ici");
 		}
 	}

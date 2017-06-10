@@ -37,25 +37,35 @@ public class Distance
 
 	protected void calculDistancePigeon()
 	{
-		if((_ville1 != null) && (_ville2 != null) && (_ville1 != _ville2))
+		_distance_pigeon = calculDistancePigeon(_ville1, _ville2);
+	}
+
+	public static double calculDistancePigeon(Ville ville1, Ville ville2)
+	{
+		if((ville1 != null) && (ville2 != null) && (ville1 != ville2))
 		{
 			//Différence de latitude
-			double dx = Math.abs(_ville1.getCoord().getLatitude() - _ville2.getCoord().getLatitude());
+			double dx = Math.abs(ville1.getCoord().getLatitude() - ville2.getCoord().getLatitude());
 			//Différence de longitude
-			double dy = Math.abs(_ville1.getCoord().getLongitude() - _ville2.getCoord().getLongitude());
+			double dy = Math.abs(ville1.getCoord().getLongitude() - ville2.getCoord().getLongitude());
 			//Théorème de Pythagore
-			_distance_pigeon = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+			return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 		}
-		else _distance_pigeon = 0;
+		return 0;
 	}
 
 	protected void calculDistanceCoccinelle()
 	{
-		if((_ville1 != null) && (_ville2 != null))
+		_distance_coccinelle = calculDistanceCoccinelle(_ville1, _ville2);
+	}
+
+	public static double calculDistanceCoccinelle(Ville ville1, Ville ville2)
+	{
+		if((ville1 != null) && (ville2 != null))
 		{
 			//calcul
 		}
-		else _distance_coccinelle = 0;
+		return 0;
 	}
 
 	public void setVille1(Ville ville)

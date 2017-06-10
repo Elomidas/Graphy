@@ -5,12 +5,16 @@ public class Graphe
 {
 	private ArrayList<Ville> _villes;
 
+	//Distance maximae par défaut pour que deux villes soient reliées
+	protected static final int _distance = 150;
+
 	public Graphe()
 	{
 		_villes = new ArrayList<Ville>();
 	}
 
-	public Graphe(ArrayList<Ville> villes) {
+	public Graphe(ArrayList<Ville> villes)
+	{
 		_villes = villes;
 	}
 
@@ -38,11 +42,13 @@ public class Graphe
 	}
 
   //GETTER & SETTER
-	public ArrayList<Ville> getVilles(){
+	public ArrayList<Ville> getVilles()
+	{
 		return _villes;
 	}
 
-	public int getNb_ville(){
+	public int getNb_ville()
+	{
 		return _villes.size();
 	}
 
@@ -88,10 +94,10 @@ public class Graphe
 						break;
 
 					//En cas de retour CRLF, on ignore le CR et on traite le LF
-					case 13 :
+					case '\r' : //CR
 						break;
 
-					case 10 :
+					case '\n' : //LF
 						//On passe à une nouvelle instance
 						iterateur = 0;
 						if(id == 0)
@@ -161,4 +167,60 @@ public class Graphe
 		}
 	}
 
+	//Fonctions de création des liaisons
+	//1 : On ne relie que les villes qui ne sont pas trop éloignées
+	public void Liaisons()
+	{
+		Liaisons(_distance);
+	}
+
+	public void Liaisons(int distance)
+	{
+		int taille = _villes.size();
+		for(int i = 0; i < taille; i++)
+		{
+			Ville v1 = _villes.get(i);
+			for(int j = (i + 1); i < taille; i++)
+			{
+				if((Distance.calculDistancePigeon(v1, _villes.get(j))) <= distance)
+				{
+					Distance d = new Distance(v1, _villes.get(j));
+					v1.ajouteDistance(d);
+					_villes.get(j).ajouteDistance(d);
+				}
+			}
+		}
+	}
+
+	//Divers
+	//Calcul de l'écart de longitude et de latitude
+	public double DLatitude()
+	{
+		double dmin = _villes.get(0).getCoord().getLatitude();
+		double dmax = dmin;
+		for(int i = 1; i < _villes.size(); i++)
+		{
+			double l = _villes.get(0).getCoord().getLatitude();
+			if(l > dmax)
+				dmax = l;
+			else if(l < dmin)
+				dmin = l;
+		}
+		return dmax - dmin;
+	}
+
+	public double DLongitude()
+	{
+		double dmin = _villes.get(0).getCoord().getLongitude();
+		double dmax = dmin;
+		for(int i = 1; i < _villes.size(); i++)
+		{
+			double l = _villes.get(0).getCoord().getLongitude();
+			if(l > dmax)
+				dmax = l;
+			else if(l < dmin)
+				dmin = l;
+		}
+		return dmax - dmin;
+	}
 }
