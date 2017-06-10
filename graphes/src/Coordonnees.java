@@ -68,6 +68,9 @@ public class Coordonnees
 	}
 
 
-
+	public String toString()
+	{
+		return _longitude + ", " + _latitude;
+	}
 
 }

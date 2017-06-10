@@ -2,11 +2,11 @@ import java.util.ArrayList;
 
 public class Ville {
 
-	private int _id;
-	private String _nom;
-	private int _nbHab;
-	private Coordonnees _coord;
-	private ArrayList<Distance> _dists;
+	protected int _id;
+	protected String _nom;
+	protected int _nbHab;
+	protected Coordonnees _coord;
+	protected ArrayList<Distance> _dists;
 
 	//Ctr défaut
 	public Ville()
@@ -19,13 +19,23 @@ public class Ville {
 	}
 
 	//Ctr surchargé
-	public Ville(int id, String nom, int nbHab, double coordX, double coordY)
+	public Ville(int id, String nom, int nbHab, double longitude, double latitude)
 	{
 		_id = id;
 		_nom = new String(nom);
 		_nbHab = nbHab;
-		_coord = new Coordonnees(coordX, coordY);
+		_coord = new Coordonnees(longitude, latitude);
 		_dists = new ArrayList<Distance>();
+	}
+
+	//Copie une ville sans le tableau des distances
+	public Ville(Ville v)
+	{
+		this(v.getId(),
+			 new String(v.getNom()),
+			 v.getNbHab(),
+			 v.getCoord().getLongitude(),
+			 v.getCoord().getLatitude());
 	}
 
 	public int getId()

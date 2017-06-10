@@ -1,16 +1,13 @@
 
 public class Main
 {
-
-	public Main()
-	{
-		// TODO Auto-generated constructor stub
-	}
+	protected static final String chemin = "data/CommunesFrance.csv";
 
 	public static void main(String[] args)
 	{
-		// TODO Auto-generated method stub
-		System.out.println("bastien est moche");
+		System.out.println("Chargement des communes");
+		Graphe graphy = new Graphe(chemin, 34040);
+		graphy.Afficher();
 	}
 
 }
