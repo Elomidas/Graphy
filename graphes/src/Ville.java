@@ -7,6 +7,8 @@ public class Ville {
 	protected int _nbHab;
 	protected Coordonnees _coord;
 	protected ArrayList<Distance> _dists;
+	//Numéro de la partie connexe à laquelle le sommet appartient
+	protected int _connexe;
 
 	//Ctr défaut
 	public Ville()
@@ -26,6 +28,7 @@ public class Ville {
 		_nbHab = nbHab;
 		_coord = new Coordonnees(longitude, latitude);
 		_dists = new ArrayList<Distance>();
+		_connexe = id;
 	}
 
 	//Copie une ville sans le tableau des distances
@@ -47,6 +50,21 @@ public class Ville {
 	{
 		if(id>= 0)
 			_id = id;
+	}
+
+	public int getConnexe()
+	{
+		return _connexe;
+	}
+
+	public void setConnexe(int c)
+	{
+		if(_connexe != c)
+		{
+			_connexe = c;
+			for(Distance d : _dists)
+				d.setConnexe(c, this);
+		}
 	}
 
 	public String getNom()

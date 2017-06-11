@@ -4,41 +4,62 @@ import java.util.ArrayList;
 public class Graphe
 {
 	private ArrayList<Ville> _villes;
+	//Index de la plus grosse ville
+	protected int _indexCap;
+	protected int _etape;
+	protected Controller _controller;
 
 	//Distance maximae par défaut pour que deux villes soient reliées
 	protected static final int _distance = 50;
 
 	public Graphe()
 	{
-		_villes = new ArrayList<Ville>();
+		Init();
 	}
 
-	public Graphe(ArrayList<Ville> villes)
+	public Graphe(ArrayList<Ville> villes, Controller c)
 	{
-		_villes = villes;
+		Init();
+		for(int i = 0; i < villes.size(); i++)
+		{
+			Ville v = new Ville(villes.get(i));
+			if((_indexCap < 0)
+				|| (v.getNbHab() > _villes.get(_indexCap).getNbHab()))
+				_indexCap = i;
+			_villes.add(v);
+		}
 	}
 
-	public Graphe(String chemin, int minHab)
+	public Graphe(String chemin, int minHab, Controller c)
 	{
-		_villes = new ArrayList<Ville>();
-		ChargerFichier(chemin, (minHab >= 0) ? minHab : 0);
+		Init();
+		_controller = c;
+		new Thread()
+		{
+			public void run()
+			{
+				ChargerFichier(chemin, (minHab >= 0) ? minHab : 0);
+			}
+		}.start();
 	}
 
-	public Graphe(String chemin)
+	public Graphe(String chemin, Controller c)
 	{
-		this(chemin, 0);
+		this(chemin, 0, c);
 	}
 
 	//Copie les Villes d'un graphe existant, sans copier les distances
-	public Graphe(Graphe g)
+	public Graphe(Graphe g, Controller c)
 	{
-		ArrayList<Ville> src = g.getVilles();
+		this(g.getVilles(), c);
+	}
+
+	protected void Init()
+	{
 		_villes = new ArrayList<Ville>();
-		for(int i = 0; i < src.size(); i++)
-		{
-			Ville v = new Ville(src.get(i));
-			_villes.add(v);
-		}
+		_controller = null;
+		_indexCap = -1;
+		_etape = 0;
 	}
 
   //GETTER & SETTER
@@ -50,6 +71,11 @@ public class Graphe
 	public int getNb_ville()
 	{
 		return _villes.size();
+	}
+
+	public int getEtape()
+	{
+		return _etape;
 	}
 
 
@@ -77,6 +103,7 @@ public class Graphe
 		// > Ligne 1 = nom des colonnes
 		int val, iterateur = 0, id = 0;
 		boolean start = false;
+		int habMax = 0;
 		String str[] = new String[] {"", "", "", "", ""};
 		try
 		{
@@ -85,7 +112,6 @@ public class Graphe
 				//Lecture du fichier caractère par caractère
 				//On converti les deux bytes en un caractère
 				char c = (char)(val);
-				//System.out.println("Val : " + val + ", char : " + c);
 				switch(c)
 				{
 					case ';' :
@@ -112,11 +138,17 @@ public class Graphe
 													Double.parseDouble(str[3]),
 													Double.parseDouble(str[4]));
 								_villes.add(v);
+								if(hab > habMax)
+								{
+									_indexCap = (id - 1);
+									habMax = hab;
+								}
 								id++;
 							}
 							str = new String[] {"", "", "", "", ""};
 						}
 						else start = true;
+						_controller.setProgress(id / 36701.0, -1, -1);
 
 						break;
 
@@ -132,6 +164,7 @@ public class Graphe
 						break;
 				}
 			}
+			_controller.setProgress(100, -1, -1);
 		}
 		catch(Exception e)
 		{
@@ -153,6 +186,7 @@ public class Graphe
 				return false;
 			}
 		}
+		_etape = 1;
 		//Succès
 		return true;
 	}
@@ -185,6 +219,17 @@ public class Graphe
 
 	public void Liaisons(int distance)
 	{
+		new Thread()
+		{
+			public void run()
+			{
+				Arretes(distance);
+			}
+		}.start();
+	}
+
+	protected void Arretes(int distance)
+	{
 		if(distance < 0)
 			distance = _distance;
 		int taille = _villes.size();
@@ -192,6 +237,7 @@ public class Graphe
 		{
 			int nb = 0;
 			Ville v1 = _villes.get(i);
+			int idConn = _villes.get(i).getConnexe();
 			for(int j = (i + 1); j < taille; j++)
 			{
 				if((Distance.calculDistancePigeon(v1, _villes.get(j))) <= distance)
@@ -200,11 +246,12 @@ public class Graphe
 					Distance d = new Distance(v1, _villes.get(j));
 					v1.ajouteDistance(d);
 					_villes.get(j).ajouteDistance(d);
+					_villes.get(j).setConnexe(idConn);
 				}
 			}
-			if((i % 1000) == 0)
-				System.out.println(i + " : " + nb + " liaisons(s) créée(s).");
+			_controller.setProgress(-1, i / ((double)taille), -1);
 		}
+		_etape = 2;
 	}
 
 	//Divers
@@ -237,5 +284,42 @@ public class Graphe
 				dmin = l;
 		}
 		return dmax - dmin;
+	}
+
+	//Supprime toutes les villes non-reliées à la plus grosse ville du graphe
+	//Rend le graphe connexe
+	public void Connexe()
+	{
+		new Thread()
+		{
+			public void run()
+			{
+				Slice();
+			}
+		}.start();
+	}
+
+	protected void Slice()
+	{
+		//On récupère l'ID de la partie connexe qui nous interesse
+		int idConn = _villes.get(_indexCap).getConnexe();
+		int compteur = 0;
+		int taille = _villes.size();
+		for(int i = taille - 1; i >= 0; i--)
+		{
+			if(_villes.get(i).getConnexe() != idConn)
+			{
+				//On détruit ce sommet
+				compteur++;
+				_villes.remove(i);
+			}
+			_controller.setProgress(-1, -1, 100.0 - (i / ((double)taille)));
+		}
+		if(compteur == 0)
+			System.out.println("Aucune ville n'a été détruite.");
+		else if(compteur == 1)
+			System.out.println("Une seule ville a été détruite.");
+		else System.out.println(compteur + " villes ont été détruites.");
+		_etape = 3;
 	}
 }

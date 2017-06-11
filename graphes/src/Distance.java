@@ -29,6 +29,15 @@ public class Distance
 		}
 	}
 
+	//Change le numéro de graphe connexe de tous les sommets
+	public void setConnexe(int c, Ville depart)
+	{
+		if(_ville2 != null)
+			_ville2.setConnexe(c);
+		if(_ville1 != null)
+			_ville1.setConnexe(c);
+	}
+
 	protected void calculDistances()
 	{
 		calculDistancePigeon();//le pigeon passe par la voie aérienne

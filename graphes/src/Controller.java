@@ -3,26 +3,28 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-import java.io.File;
 import java.io.IOException;
 
 public class Controller extends Application
 {
 
     private Stage primaryStage;
+    protected Stage loadStage;
     private AnchorPane gui;
-
+    private AnchorPane gui2;
+    protected boolean m_progress;
 
     @FXML
     protected Button m_valider;
@@ -39,18 +41,28 @@ public class Controller extends Application
     @FXML
     protected RadioButton m_coccinelle;
 
+    @FXML
+    protected ProgressBar m_pConstr;
+
+    @FXML
+    protected ProgressBar m_pLiaison;
+
+    @FXML
+    protected ProgressBar m_pSlice;
+
 	protected static final String chemin = "data/CommunesFrance.csv";
 
     @Override
-    public void start(Stage primaryStage) throws Exception
+    public void start(Stage primStg) throws Exception
     {
         try
         {
-            this.primaryStage = primaryStage;
-            this.primaryStage.setTitle("Graphy");
+        	m_progress = false;
+            this.primaryStage = primStg;
+            primaryStage.setTitle("Graphy");
 
-            // Permet l'arret du programme lorsque la fenêtre est quit�e
-            this.primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>()
+            // Permet l'arret du programme lorsque la fenêtre est quitée
+            primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>()
 	            {
 	                @Override
 	                public void handle(WindowEvent t)
@@ -63,10 +75,11 @@ public class Controller extends Application
             // Chargement du rootLayout
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Controller.class.getResource("GUI.fxml"));
-            gui = (AnchorPane)loader.load();
+            Scene scene = null;
+        	gui = (AnchorPane)loader.load();
+            scene = new Scene(gui);
 
             // Affichage du rootLayout
-            Scene scene = new Scene(gui);
             primaryStage.setScene(scene);
             primaryStage.show();
         }
@@ -74,6 +87,72 @@ public class Controller extends Application
         {
             e.printStackTrace();
         }
+    }
+
+    protected void LoadFenetre()
+    {
+    	m_valider.setDisable(true);
+
+    	//Création d'une fenêtre servant à afficher la progression lors de la création du graphe
+    	Group root = new Group();
+    	root.getChildren().removeAll();
+
+    	//Ajout des sommets
+    	Label lConstr = new Label();
+    	lConstr.setText("Création des sommets : ");
+    	lConstr.setLayoutX(8);
+    	lConstr.setLayoutY(14);
+    	root.getChildren().add(lConstr);
+    	m_pConstr = new ProgressBar();
+    	m_pConstr.setProgress(0.0);
+    	m_pConstr.setLayoutX(185);
+    	m_pConstr.setLayoutY(10);
+    	m_pConstr.setPadding(new Insets(5.0));
+    	root.getChildren().add(m_pConstr);
+
+    	//Ajout des arrêtes
+    	Label lSommet = new Label();
+    	lSommet.setText("Création des arrêtes : ");
+    	lSommet.setLayoutX(8);
+    	lSommet.setLayoutY(43);
+    	root.getChildren().add(lSommet);
+    	m_pLiaison = new ProgressBar();
+    	m_pLiaison.setProgress(0.0);
+    	m_pLiaison.setLayoutX(185);
+    	m_pLiaison.setLayoutY(39);
+    	m_pLiaison.setPadding(new Insets(5.0));
+    	root.getChildren().add(m_pLiaison);
+
+    	//Suppression des villes non reliées à Paris
+    	Label lSlice = new Label();
+    	lSlice.setText("Suppression des villes perdues : ");
+    	lSlice.setLayoutX(8);
+    	lSlice.setLayoutY(72);
+    	root.getChildren().add(lSlice);
+    	m_pSlice = new ProgressBar();
+    	m_pSlice.setProgress(0.0);
+    	m_pSlice.setLayoutX(185);
+    	m_pSlice.setLayoutY(68);
+    	m_pSlice.setPadding(new Insets(5.0));
+    	root.getChildren().add(m_pSlice);
+
+    	//Affichage
+    	Scene sc = new Scene(root);
+    	loadStage = new Stage();
+    	loadStage.setTitle("Création du graphe");
+    	loadStage.setScene(sc);
+    	loadStage.show();
+
+    	m_progress = true;
+    }
+
+    public void CloseLoad()
+    {
+    	Platform.runLater(() ->
+    	{
+    		m_valider.setDisable(false);
+    		loadStage.close();
+    	});
     }
 
     public static int toInt(String str)
@@ -96,10 +175,67 @@ public class Controller extends Application
     public void handleValider() throws IOException
     {
     	System.out.println("Chargement des communes");
-    	Graphe graphy = new Graphe(chemin, toInt(m_minHab.getText()));
-		graphy.Afficher();
-		graphy.Liaisons(toInt(m_maxDist.getText()));
-		graphy.AfficherInfos();
+    	LoadFenetre();
+    	Graphe graphy = new Graphe(chemin, toInt(m_minHab.getText()), this);
+    	new Thread()
+    	{
+    		public void run()
+    		{
+    			while(graphy.getEtape() < 1)
+    			{
+    				try
+    				{
+    					Thread.sleep(100);
+    				}
+    				catch(Exception e)
+    				{
+    					e.printStackTrace();
+    				}
+    			}
+				graphy.Liaisons(toInt(m_maxDist.getText()));
+    			while(graphy.getEtape() < 2)
+    			{
+    				try
+    				{
+    					Thread.sleep(100);
+    				}
+    				catch(Exception e)
+    				{
+    					e.printStackTrace();
+    				}
+    			}
+				graphy.AfficherInfos();
+				graphy.Connexe();
+				while(graphy.getEtape() < 3)
+				{
+					try
+					{
+						Thread.sleep(100);
+					}
+					catch(Exception e)
+					{
+						e.printStackTrace();
+					}
+				}
+				CloseLoad();
+    		}
+    	}.start();
+    }
+
+    public void setProgress(double p1, double p2, double p3)
+    {
+    	Platform.runLater(() ->
+    	{
+	    	if(m_progress)
+	    	{
+		    	if(p1 >= 0)
+		    		m_pConstr.setProgress(p1);
+		    	if(p2 >= 0)
+		    		m_pLiaison.setProgress(p2);
+		    	if(p3 >= 0)
+		    		m_pSlice.setProgress(p3);
+	    	}
+    	});
     }
 
 
