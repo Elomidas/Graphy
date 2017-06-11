@@ -6,6 +6,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -23,8 +25,21 @@ public class Controller extends Application
 
 
     @FXML
-    Button m_browse;
+    protected Button m_valider;
 
+    @FXML
+    protected TextField m_minHab;
+
+    @FXML
+    protected TextField m_maxDist;
+
+    @FXML
+    protected RadioButton m_pigeon;
+
+    @FXML
+    protected RadioButton m_coccinelle;
+
+	protected static final String chemin = "data/CommunesFrance.csv";
 
     @Override
     public void start(Stage primaryStage) throws Exception
@@ -32,7 +47,7 @@ public class Controller extends Application
         try
         {
             this.primaryStage = primaryStage;
-            this.primaryStage.setTitle("Client");
+            this.primaryStage.setTitle("Graphy");
 
             // Permet l'arret du programme lorsque la fenêtre est quit�e
             this.primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>()
@@ -64,17 +79,9 @@ public class Controller extends Application
     @FXML
     public void handleValider() throws IOException
     {
-    	//
-    }
-
-    @FXML
-    public void browse() throws IOException
-    {
-    	FileChooser fileChooser = new FileChooser();
-    	fileChooser.setTitle("Importer des données");
-    	fileChooser.getExtensionFilters().add(
-    	         new ExtensionFilter("Fichiers CSV", "*.csv"));
-    	fileChooser.showOpenDialog(primaryStage);
+    	System.out.println("Chargement des communes");
+		Graphe graphy = new Graphe(chemin, 34040);
+		graphy.Afficher();
     }
 
 

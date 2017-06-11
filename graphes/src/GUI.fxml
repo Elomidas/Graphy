@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="479.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="137.0" prefWidth="317.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
    <children>
-      <Button fx:id="m_browse" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#browse" text="Browse" />
+      <Label layoutX="14.0" layoutY="14.0" text="Minimum d'habitants" />
+      <Label layoutX="14.0" layoutY="43.0" text="Distance maximum" />
+      <TextField fx:id="m_minHab" layoutX="151.0" layoutY="10.0" />
+      <TextField fx:id="m_maxDist" layoutX="151.0" layoutY="39.0" />
+      <Button fx:id="m_valider" layoutX="132.0" layoutY="98.0" mnemonicParsing="false" onAction="#handleValider" text="Valider" />
+      <RadioButton fx:id="m_pigeon" layoutX="14.0" layoutY="73.0" mnemonicParsing="false" selected="true" text="Distance vol">
+         <toggleGroup>
+            <ToggleGroup fx:id="Distance" />
+         </toggleGroup>
+      </RadioButton>
+      <RadioButton fx:id="m_coccinelle" layoutX="151.0" layoutY="73.0" mnemonicParsing="false" text="Distance route" toggleGroup="$Distance" />
    </children>
 </AnchorPane>
