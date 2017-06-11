@@ -71,6 +71,11 @@ public class Ville {
 			_nbHab = nbHab;
 	}
 
+	public int getDegre()
+	{
+		return _dists.size();
+	}
+
 	public Coordonnees getCoord()
 	{
 		return _coord;

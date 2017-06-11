@@ -76,12 +76,30 @@ public class Controller extends Application
         }
     }
 
+    public static int toInt(String str)
+    {
+    	if(str.equals(""))
+    		return -1;
+    	int num = 0;
+    	for(int i = 0; i < str.length(); i++)
+    	{
+    		char c = str.charAt(i);
+    		if((c < '0') || (c > '9'))
+    			return -1;
+    		num *= 10;
+    		num += Integer.parseInt("" + c);
+    	}
+    	return num;
+    }
+
     @FXML
     public void handleValider() throws IOException
     {
     	System.out.println("Chargement des communes");
-		Graphe graphy = new Graphe(chemin, 34040);
+    	Graphe graphy = new Graphe(chemin, toInt(m_minHab.getText()));
 		graphy.Afficher();
+		graphy.Liaisons(toInt(m_maxDist.getText()));
+		graphy.AfficherInfos();
     }
 
 

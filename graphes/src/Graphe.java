@@ -6,7 +6,7 @@ public class Graphe
 	private ArrayList<Ville> _villes;
 
 	//Distance maximae par défaut pour que deux villes soient reliées
-	protected static final int _distance = 150;
+	protected static final int _distance = 50;
 
 	public Graphe()
 	{
@@ -21,7 +21,7 @@ public class Graphe
 	public Graphe(String chemin, int minHab)
 	{
 		_villes = new ArrayList<Ville>();
-		ChargerFichier(chemin, minHab);
+		ChargerFichier(chemin, (minHab >= 0) ? minHab : 0);
 	}
 
 	public Graphe(String chemin)
@@ -51,7 +51,6 @@ public class Graphe
 	{
 		return _villes.size();
 	}
-
 
 
 
@@ -167,6 +166,16 @@ public class Graphe
 		}
 	}
 
+	public void AfficherInfos()
+	{
+		int taille = _villes.size();
+		int nbLi = 0;
+		for(int i = 0; i < taille; i++)
+			nbLi += _villes.get(i).getDegre();
+		nbLi /= 2;
+		System.out.println(taille + " villes chargées.\n" + nbLi + " liaisons.");
+	}
+
 	//Fonctions de création des liaisons
 	//1 : On ne relie que les villes qui ne sont pas trop éloignées
 	public void Liaisons()
@@ -176,19 +185,25 @@ public class Graphe
 
 	public void Liaisons(int distance)
 	{
+		if(distance < 0)
+			distance = _distance;
 		int taille = _villes.size();
 		for(int i = 0; i < taille; i++)
 		{
+			int nb = 0;
 			Ville v1 = _villes.get(i);
-			for(int j = (i + 1); i < taille; i++)
+			for(int j = (i + 1); j < taille; j++)
 			{
 				if((Distance.calculDistancePigeon(v1, _villes.get(j))) <= distance)
 				{
+					nb++;
 					Distance d = new Distance(v1, _villes.get(j));
 					v1.ajouteDistance(d);
 					_villes.get(j).ajouteDistance(d);
 				}
 			}
+			if((i % 1000) == 0)
+				System.out.println(i + " : " + nb + " liaisons(s) créée(s).");
 		}
 	}
 

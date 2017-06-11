@@ -40,14 +40,20 @@ public class Distance
 		_distance_pigeon = calculDistancePigeon(_ville1, _ville2);
 	}
 
+	//Calcul de la distance en km
 	public static double calculDistancePigeon(Ville ville1, Ville ville2)
 	{
 		if((ville1 != null) && (ville2 != null) && (ville1 != ville2))
 		{
-			//Différence de latitude
-			double dx = Math.abs(ville1.getCoord().getLatitude() - ville2.getCoord().getLatitude());
-			//Différence de longitude
-			double dy = Math.abs(ville1.getCoord().getLongitude() - ville2.getCoord().getLongitude());
+			double xKm1 = ville1.getCoord().getLatitude() * 20000.0 / 180.0;
+			double yKm1 = ville1.getCoord().getLongitude() * (20000.0 / 180.0) * Math.cos(ville1.getCoord().getLatitude());
+
+			double xKm2 = ville2.getCoord().getLatitude() * 20000.0 / 180.0;
+			double yKm2 = ville2.getCoord().getLongitude() * (20000.0 / 180.0) * Math.cos(ville2.getCoord().getLatitude());
+
+			double dx = xKm1 - xKm2;
+			double dy = yKm1 - yKm2;
+
 			//Théorème de Pythagore
 			return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 		}
