@@ -1,13 +1,25 @@
 import java.io.FileInputStream;
-import java.util.ArrayList;
+
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.*;
 
 public class Graphe
 {
-	private ArrayList<Ville> _villes;
 	//Index de la plus grosse ville
 	protected int _indexCap;
 	protected int _etape;
 	protected Controller _controller;
+	protected Graph _graphe;
+	//Coordonnées utiles à l'affichage
+	protected double _longitudeMinimum;
+	protected double _latitudeMinimum;
+
+	//Encadrement de la France métropolitaine
+	protected static final double _latMax = 51.248163159055906;
+	protected static final double _latMin = 41.2282490151853;
+	protected static final double _lonMax = 8.382568359375;
+	protected static final double _lonMin = -5.372314453125;
 
 	//Distance maximae par défaut pour que deux villes soient reliées
 	protected static final int _distance = 50;
@@ -15,19 +27,6 @@ public class Graphe
 	public Graphe()
 	{
 		Init();
-	}
-
-	public Graphe(ArrayList<Ville> villes, Controller c)
-	{
-		Init();
-		for(int i = 0; i < villes.size(); i++)
-		{
-			Ville v = new Ville(villes.get(i));
-			if((_indexCap < 0)
-				|| (v.getNbHab() > _villes.get(_indexCap).getNbHab()))
-				_indexCap = i;
-			_villes.add(v);
-		}
 	}
 
 	public Graphe(String chemin, int minHab, Controller c)
@@ -48,31 +47,18 @@ public class Graphe
 		this(chemin, 0, c);
 	}
 
-	//Copie les Villes d'un graphe existant, sans copier les distances
-	public Graphe(Graphe g, Controller c)
-	{
-		this(g.getVilles(), c);
-	}
-
 	protected void Init()
 	{
-		_villes = new ArrayList<Ville>();
 		_controller = null;
 		_indexCap = -1;
 		_etape = 0;
+		_graphe = new SingleGraph("Graphy");
+		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+		_graphe.addAttribute("ui.quality");
+		_graphe.addAttribute("ui.antialias");
 	}
 
-  //GETTER & SETTER
-	public ArrayList<Ville> getVilles()
-	{
-		return _villes;
-	}
-
-	public int getNb_ville()
-	{
-		return _villes.size();
-	}
-
+	//GETTER & SETTER
 	public int getEtape()
 	{
 		return _etape;
@@ -101,7 +87,7 @@ public class Graphe
 		//Format du fichier CSV :
 		// > id;nom;population;longitude;latitude
 		// > Ligne 1 = nom des colonnes
-		int val, iterateur = 0, id = 0;
+		int val, iterateur = 0, id = 0, compteur = 0;
 		boolean start = false;
 		int habMax = 0;
 		String str[] = new String[] {"", "", "", "", ""};
@@ -127,17 +113,20 @@ public class Graphe
 						iterateur = 0;
 						if(id == 0)
 							id++;
-						if(start)
+						if(start && Filtre(str[3], str[4]))
 						{
 							int hab = Integer.parseInt(str[2]);
 							if(hab >= minHab)
 							{
-								Ville v = new Ville(id,
-													str[1],
-													hab,
-													Double.parseDouble(str[3]),
-													Double.parseDouble(str[4]));
-								_villes.add(v);
+								//On ajoute le noeud au graphe
+								Node n = _graphe.addNode("" + id);
+								n.setAttribute("Nom", str[1]);
+								n.setAttribute("Habitants", Integer.toString(hab));
+								n.setAttribute("Longitude", str[3]);
+								n.setAttribute("Latitude", str[4]);
+
+								//Si on a plus d'habitants dans cette ville que dans les autres,
+								//on enregistre son ID
 								if(hab > habMax)
 								{
 									_indexCap = (id - 1);
@@ -145,10 +134,11 @@ public class Graphe
 								}
 								id++;
 							}
-							str = new String[] {"", "", "", "", ""};
 						}
 						else start = true;
-						_controller.setProgress(id / 36701.0, -1, -1);
+						str = new String[] {"", "", "", "", ""};
+						compteur++;
+						_controller.setProgress(compteur / 36701.0, -1, -1);
 
 						break;
 
@@ -191,23 +181,42 @@ public class Graphe
 		return true;
 	}
 
+	//Filtre les villes selon la latitude et la longitude pour ne garder que celles en France métropolitaine
+	protected static boolean Filtre(String lon, String lat)
+	{
+		double lati = Double.parseDouble(lat);
+		if(lati < _latMin)
+			return false;
+		if(lati > _latMax)
+			return false;
+		double longi = Double.parseDouble(lon);
+		if(longi < _lonMin)
+			return false;
+		if(longi > _lonMax)
+			return false;
+		return true;
+	}
+
+	public void AfficherGUI()
+	{
+		_graphe.display(false);
+	}
+
 	public void Afficher()
 	{
-		for(int i = 0; i < _villes.size(); i++)
+		for(Node n : _graphe)
 		{
-			Ville v = _villes.get(i);
-			System.out.println(v.getId() + ", " + v.getNom() + ", " + v.getNbHab() + ", " + v.getCoord());
+			System.out.println(n.getAttribute("Nom") + ", " +
+							   n.getAttribute("Habitants") + ", " +
+							   n.getAttribute("Latitude") + ", " +
+							   n.getAttribute("Longitude"));
 		}
 	}
 
 	public void AfficherInfos()
 	{
-		int taille = _villes.size();
-		int nbLi = 0;
-		for(int i = 0; i < taille; i++)
-			nbLi += _villes.get(i).getDegre();
-		nbLi /= 2;
-		System.out.println(taille + " villes chargées.\n" + nbLi + " liaisons.");
+		System.out.println(_graphe.getNodeCount() + " villes chargées.\n" +
+						   _graphe.getEdgeCount() + " liaisons.");
 	}
 
 	//Fonctions de création des liaisons
@@ -232,22 +241,20 @@ public class Graphe
 	{
 		if(distance < 0)
 			distance = _distance;
-		int taille = _villes.size();
+		int taille = _graphe.getNodeCount();
 		for(int i = 0; i < taille; i++)
 		{
-			int nb = 0;
-			Ville v1 = _villes.get(i);
-			int idConn = _villes.get(i).getConnexe();
+			Node n1 = _graphe.getNode(i);
 			for(int j = (i + 1); j < taille; j++)
 			{
-				if((Distance.calculDistancePigeon(v1, _villes.get(j))) <= distance)
-				{
-					nb++;
-					Distance d = new Distance(v1, _villes.get(j));
-					v1.ajouteDistance(d);
-					_villes.get(j).ajouteDistance(d);
-					_villes.get(j).setConnexe(idConn);
-				}
+				Node n2 = _graphe.getNode(j);
+				//On ajoute un arc entre les sommets
+				//si les villes sont assez proches
+				if(Distance(Double.parseDouble(n1.getAttribute("Latitude")),
+							Double.parseDouble(n1.getAttribute("Longitude")),
+							Double.parseDouble(n2.getAttribute("Latitude")),
+							Double.parseDouble(n2.getAttribute("Longitude"))) <= distance)
+					_graphe.addEdge(i + "-" + j, i, j);
 			}
 			_controller.setProgress(-1, i / ((double)taille), -1);
 		}
@@ -258,68 +265,94 @@ public class Graphe
 	//Calcul de l'écart de longitude et de latitude
 	public double DLatitude()
 	{
-		double dmin = _villes.get(0).getCoord().getLatitude();
+		double dmin = Double.parseDouble(_graphe.getNode(0).getAttribute("Latitude"));
 		double dmax = dmin;
-		for(int i = 1; i < _villes.size(); i++)
+		for(Node n : _graphe)
 		{
-			double l = _villes.get(0).getCoord().getLatitude();
+			double l = Double.parseDouble(n.getAttribute("Latitude"));
 			if(l > dmax)
 				dmax = l;
 			else if(l < dmin)
 				dmin = l;
 		}
+		_latitudeMinimum = dmin;
 		return dmax - dmin;
 	}
 
 	public double DLongitude()
 	{
-		double dmin = _villes.get(0).getCoord().getLongitude();
+		double dmin = Double.parseDouble(_graphe.getNode(0).getAttribute("Longitude"));
 		double dmax = dmin;
-		for(int i = 1; i < _villes.size(); i++)
+		for(Node n : _graphe)
 		{
-			double l = _villes.get(0).getCoord().getLongitude();
+			double l = Double.parseDouble(n.getAttribute("Longitude"));
 			if(l > dmax)
 				dmax = l;
 			else if(l < dmin)
 				dmin = l;
 		}
+		_longitudeMinimum = dmin;
 		return dmax - dmin;
 	}
 
-	//Supprime toutes les villes non-reliées à la plus grosse ville du graphe
-	//Rend le graphe connexe
-	public void Connexe()
+	protected int[] Position(Node n)
 	{
-		new Thread()
-		{
-			public void run()
-			{
-				Slice();
-			}
-		}.start();
+		int h = (int)(1000 * Distance(Double.parseDouble(n.getAttribute("Latitude")),
+									  _longitudeMinimum,
+									  _latitudeMinimum,
+									  _longitudeMinimum));
+		int l = (int)(1000 * Distance(_latitudeMinimum,
+									  Double.parseDouble(n.getAttribute("Longitude")),
+									  _latitudeMinimum,
+									  _longitudeMinimum));
+		return new int[] {l, h};
 	}
 
-	protected void Slice()
+	protected static double toRad(double angle)
 	{
-		//On récupère l'ID de la partie connexe qui nous interesse
-		int idConn = _villes.get(_indexCap).getConnexe();
+        return (Math.PI * angle) / 180.0;
+	}
+
+	protected static double Distance(double lat1, double lon1, double lat2, double lon2)
+	{
+
+        int r = 6378; //Rayon de la terre en kilomètres
+
+	    double lat_a = toRad(lat1);
+	    double lon_a = toRad(lon1);
+	    double lat_b = toRad(lat2);
+	    double lon_b = toRad(lon2);
+
+	    return r * (Math.PI/2 - Math.asin(Math.sin(lat_b) * Math.sin(lat_a) + Math.cos(lon_b - lon_a) * Math.cos(lat_b) * Math.cos(lat_a)));
+	}
+
+	//Donne des positions aux sommets pour les afficher
+	public void Positionner(double hauteur, double largeur)
+	{
+		//On calcule la largeur et la hauteur du graphe
+		double dh = DLongitude();
+		double dl = DLatitude();
 		int compteur = 0;
-		int taille = _villes.size();
-		for(int i = taille - 1; i >= 0; i--)
+		double taille = _graphe.getNodeCount();
+
+		//On calcul les positions des sommets
+		for(Node n : _graphe)
 		{
-			if(_villes.get(i).getConnexe() != idConn)
-			{
-				//On détruit ce sommet
-				compteur++;
-				_villes.remove(i);
-			}
-			_controller.setProgress(-1, -1, 100.0 - (i / ((double)taille)));
+			/*
+			//Hauteur
+			int h = (int)(hauteur * (_latitudeMaximum - Double.parseDouble(n.getAttribute("Latitude"))) / dh);
+			//Largeur
+			int l = (int)(largeur * (Double.parseDouble(n.getAttribute("Longitude")) - _longitudeMinimum) / dl);
+			System.out.println("Position : " + l + ", " + h);
+			*/
+			/*
+			int h = (int)(1000 * Double.parseDouble(n.getAttribute("Latitude")));
+			int l = (int)(1000 * Double.parseDouble(n.getAttribute("Longitude")));
+			*/
+			int[] pos = Position(n);
+			n.setAttribute("xyz", pos[0], pos[1], 0);
+			_controller.setProgress(-1, -1, compteur / taille);
+			compteur++;
 		}
-		if(compteur == 0)
-			System.out.println("Aucune ville n'a été détruite.");
-		else if(compteur == 1)
-			System.out.println("Une seule ville a été détruite.");
-		else System.out.println(compteur + " villes ont été détruites.");
-		_etape = 3;
 	}
 }

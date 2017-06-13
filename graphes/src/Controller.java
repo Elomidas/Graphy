@@ -23,7 +23,6 @@ public class Controller extends Application
     private Stage primaryStage;
     protected Stage loadStage;
     private AnchorPane gui;
-    private AnchorPane gui2;
     protected boolean m_progress;
 
     @FXML
@@ -106,7 +105,7 @@ public class Controller extends Application
     	m_pConstr = new ProgressBar();
     	m_pConstr.setProgress(0.0);
     	m_pConstr.setLayoutX(185);
-    	m_pConstr.setLayoutY(10);
+    	m_pConstr.setLayoutY(14);
     	m_pConstr.setPadding(new Insets(5.0));
     	root.getChildren().add(m_pConstr);
 
@@ -119,7 +118,7 @@ public class Controller extends Application
     	m_pLiaison = new ProgressBar();
     	m_pLiaison.setProgress(0.0);
     	m_pLiaison.setLayoutX(185);
-    	m_pLiaison.setLayoutY(39);
+    	m_pLiaison.setLayoutY(43);
     	m_pLiaison.setPadding(new Insets(5.0));
     	root.getChildren().add(m_pLiaison);
 
@@ -205,19 +204,9 @@ public class Controller extends Application
     				}
     			}
 				graphy.AfficherInfos();
-				graphy.Connexe();
-				while(graphy.getEtape() < 3)
-				{
-					try
-					{
-						Thread.sleep(100);
-					}
-					catch(Exception e)
-					{
-						e.printStackTrace();
-					}
-				}
+				graphy.Positionner(500, 500);
 				CloseLoad();
+				Afficher(graphy);
     		}
     	}.start();
     }
@@ -235,6 +224,14 @@ public class Controller extends Application
 		    	if(p3 >= 0)
 		    		m_pSlice.setProgress(p3);
 	    	}
+    	});
+    }
+
+    public void Afficher(Graphe graphy)
+    {
+    	Platform.runLater(() ->
+    	{
+    		graphy.AfficherGUI();
     	});
     }
 
