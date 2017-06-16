@@ -1,4 +1,5 @@
 import java.io.FileInputStream;
+import java.util.ArrayList;
 
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -355,9 +356,29 @@ public class Graphe
 			compteur++;
 		}
 	}
-	
-	public void Astar()
-	{
-		//Algo A*
+
+	public void Dijkstra(){
+
 	}
+
+	//Pour les routes
+	public void Astar(Ville depart, Ville arrive)
+	{
+		ArrayList<Ville> aExplorer = new ArrayList<Ville>();
+		ArrayList<Ville> DejaExplore = new ArrayList<Ville>();
+		aExplorer.add(depart);
+
+		while((aExplorer.size() > 0) && !(aExplorer.contains(arrive))){
+			Ville X = aExplorer.get(0);
+			for(int i = 0; i < aExplorer.size(); i++){
+				if(//aExplorer.get(i) a un cout strictement moins fort que X){
+					X = aExplorer.get(i); //On récupere la ville du tableau aExplorer avec le cout minimum
+				}
+				DejaExplore.add(X);
+
+
+
+		}
+	}
+
 }
