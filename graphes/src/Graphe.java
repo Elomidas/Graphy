@@ -355,4 +355,9 @@ public class Graphe
 			compteur++;
 		}
 	}
+	
+	public void Astar()
+	{
+		//Algo A*
+	}
 }
