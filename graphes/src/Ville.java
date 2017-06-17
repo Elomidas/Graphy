@@ -2,11 +2,13 @@ import java.util.ArrayList;
 
 public class Ville {
 
-	private int _id;
-	private String _nom;
-	private int _nbHab;
-	private Coordonnees _coord;
-	private ArrayList<Distance> _dists;
+	protected int _id;
+	protected String _nom;
+	protected int _nbHab;
+	protected Coordonnees _coord;
+	protected ArrayList<Distance> _dists;
+	//Numéro de la partie connexe à laquelle le sommet appartient
+	protected int _connexe;
 
 	//Ctr défaut
 	public Ville()
@@ -19,13 +21,24 @@ public class Ville {
 	}
 
 	//Ctr surchargé
-	public Ville(int id, String nom, int nbHab, double coordX, double coordY)
+	public Ville(int id, String nom, int nbHab, double longitude, double latitude)
 	{
 		_id = id;
 		_nom = new String(nom);
 		_nbHab = nbHab;
-		_coord = new Coordonnees(coordX, coordY);
+		_coord = new Coordonnees(longitude, latitude);
 		_dists = new ArrayList<Distance>();
+		_connexe = id;
+	}
+
+	//Copie une ville sans le tableau des distances
+	public Ville(Ville v)
+	{
+		this(v.getId(),
+			 new String(v.getNom()),
+			 v.getNbHab(),
+			 v.getCoord().getLongitude(),
+			 v.getCoord().getLatitude());
 	}
 
 	public int getId()
@@ -37,6 +50,21 @@ public class Ville {
 	{
 		if(id>= 0)
 			_id = id;
+	}
+
+	public int getConnexe()
+	{
+		return _connexe;
+	}
+
+	public void setConnexe(int c)
+	{
+		if(_connexe != c)
+		{
+			_connexe = c;
+			for(Distance d : _dists)
+				d.setConnexe(c, this);
+		}
 	}
 
 	public String getNom()
@@ -59,6 +87,11 @@ public class Ville {
 	{
 		if(nbHab >= 0)
 			_nbHab = nbHab;
+	}
+
+	public int getDegre()
+	{
+		return _dists.size();
 	}
 
 	public Coordonnees getCoord()
@@ -120,7 +153,6 @@ public class Ville {
 			}
 		}
 	}
-
 
 
 }

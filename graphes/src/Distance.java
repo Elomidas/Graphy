@@ -29,6 +29,15 @@ public class Distance
 		}
 	}
 
+	//Change le numéro de graphe connexe de tous les sommets
+	public void setConnexe(int c, Ville depart)
+	{
+		if(_ville2 != null)
+			_ville2.setConnexe(c);
+		if(_ville1 != null)
+			_ville1.setConnexe(c);
+	}
+
 	protected void calculDistances()
 	{
 		calculDistancePigeon();//le pigeon passe par la voie aérienne
@@ -37,25 +46,41 @@ public class Distance
 
 	protected void calculDistancePigeon()
 	{
-		if((_ville1 != null) && (_ville2 != null) && (_ville1 != _ville2))
+		_distance_pigeon = calculDistancePigeon(_ville1, _ville2);
+	}
+
+	//Calcul de la distance en km
+	public static double calculDistancePigeon(Ville ville1, Ville ville2)
+	{
+		if((ville1 != null) && (ville2 != null) && (ville1 != ville2))
 		{
-			//Différence de latitude
-			double dx = Math.abs(_ville1.getCoord().getLatitude() - _ville2.getCoord().getLatitude());
-			//Différence de longitude
-			double dy = Math.abs(_ville1.getCoord().getLongitude() - _ville2.getCoord().getLongitude());
+			double xKm1 = ville1.getCoord().getLatitude() * 20000.0 / 180.0;
+			double yKm1 = ville1.getCoord().getLongitude() * (20000.0 / 180.0) * Math.cos(ville1.getCoord().getLatitude());
+
+			double xKm2 = ville2.getCoord().getLatitude() * 20000.0 / 180.0;
+			double yKm2 = ville2.getCoord().getLongitude() * (20000.0 / 180.0) * Math.cos(ville2.getCoord().getLatitude());
+
+			double dx = xKm1 - xKm2;
+			double dy = yKm1 - yKm2;
+
 			//Théorème de Pythagore
-			_distance_pigeon = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+			return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 		}
-		else _distance_pigeon = 0;
+		return 0;
 	}
 
 	protected void calculDistanceCoccinelle()
 	{
-		if((_ville1 != null) && (_ville2 != null))
+		_distance_coccinelle = calculDistanceCoccinelle(_ville1, _ville2);
+	}
+
+	public static double calculDistanceCoccinelle(Ville ville1, Ville ville2)
+	{
+		if((ville1 != null) && (ville2 != null))
 		{
 			//calcul
 		}
-		else _distance_coccinelle = 0;
+		return 0;
 	}
 
 	public void setVille1(Ville ville)
@@ -72,9 +97,21 @@ public class Distance
 	{
 		boolean b1, b2;
 		if(b1 = (ville1 != _ville1))
+		{
+			if(_ville1 != null)
+				_ville1.supprDistance(this);
 			_ville1 = ville1;
+			if(_ville1 != null)
+				_ville1.ajouteDistance(this);
+		}
 		if(b2 = (ville2 != _ville2))
+		{
+			if(_ville2 != null)
+				_ville2.supprDistance(this);
 			_ville2 = ville2;
+			if(_ville2 != null)
+				_ville2.ajouteDistance(this);
+		}
 		if(b1 || b2)
 			calculDistances();
 	}

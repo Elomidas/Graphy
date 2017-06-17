@@ -1,0 +1,26 @@
+Résultats graphe
+
+minHab = 0, dist = 50
+36.700 villes chargées.
+14.388.728 liaisons.
+> Très long
+
+minHab = 10.000, dist = 50
+948 villes chargées.
+30.514 liaisons.
+
+minHab = 1.000, dist = 50
+9.677 villes chargées.
+1.082.788 liaisons.
+
+minHab = 1.000, dist = 100
+9.677 villes chargées.
+3.139.622 liaisons.
+
+minHab = 500, dist = 100
+16697 villes chargées.
+9353837 liaisons.
+
+minHab = 500, dist = 150
+16697 villes chargées.
+16883960 liaisons.
