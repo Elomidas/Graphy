@@ -361,17 +361,17 @@ public class Graphe
 
 	}
 
-	//Pour les routes
-	public void Astar(Ville depart, Ville arrive)
+	//A vol d'oiseau
+	public ArrayList<Ville> Astar(Ville depart, Ville arrivee)
 	{
 		ArrayList<Ville> aExplorer = new ArrayList<Ville>();
 		ArrayList<Ville> DejaExplore = new ArrayList<Ville>();
 		aExplorer.add(depart);
 
-		while((aExplorer.size() > 0) && !(aExplorer.contains(arrive))){
+		while((aExplorer.size() > 0) && !(aExplorer.contains(arrivee))){
 			Ville X = aExplorer.get(0);
 			for(int i = 0; i < aExplorer.size(); i++){
-				if(//aExplorer.get(i) a un cout strictement moins fort que X){
+				if(CoutAstar(depart, arrivee, aExplorer.get(i)) <= CoutAstar(depart, arrivee, X)){
 					X = aExplorer.get(i); //On récupere la ville du tableau aExplorer avec le cout minimum
 				}
 				DejaExplore.add(X);
@@ -379,6 +379,22 @@ public class Graphe
 
 
 		}
+	}
+
+	//cout a vol d'oiseau
+	public double CoutAstar(Ville depart, Ville arrivee, Ville ville){
+		double cout = 1000000;
+
+		/*double distanceDepart = Distance(depart.getCoord().getLatitude(), depart.getCoord().getLongitude(),
+		ville.getCoord().getLatitude(), ville.getCoord().getLongitude());
+
+		double distanceArrivee = Distance(arrivee.getCoord().getLatitude(), arrivee.getCoord().getLongitude(),
+				ville.getCoord().getLatitude(), ville.getCoord().getLongitude());
+
+		cout = distanceDepart + distanceArrivee;
+		*/
+
+		return(cout);
 	}
 
 }
