@@ -2,6 +2,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.*;
 
@@ -357,10 +358,83 @@ public class Graphe
 		}
 	}
 
-	public void Dijkstra(){
-
+	public void Dijkstra(String depart, String arrivee)
+	{
+		int[][] tab_poids = new int[_graphe.getNodeCount()][2];//colonne 1 --> poids, colonne 2 -->1 si deja parcouru
+		String[] antecedent = new String[_graphe.getNodeCount()];//Antecedent du noeud associe
+		InitDij(tab_poids, antecedent, depart);
+		Node noeud_fils;
+		Node noeud_pere = _graphe.getNode(depart);
+		while(!noeud_pere.getAttribute("Nom").equals(arrivee))
+		{
+			for(Edge e : noeud_pere.getEachEdge()) // pour chaque liaison du noeud
+			{
+				noeud_fils = e.getOpposite(noeud_pere);// on récupère le fils
+				int indice_fils = RecuperationIndiceNoeud(noeud_fils);
+				int indice_pere = RecuperationIndiceNoeud(noeud_pere);
+				if(tab_poids[indice_fils][1] == 0)//Si on est jamais passé par ce noeud
+					if(tab_poids[indice_pere][0]+ Distance(Double.parseDouble(noeud_pere.getAttribute("Latitude")),
+															Double.parseDouble(noeud_pere.getAttribute("Longitude")),
+															Double.parseDouble(noeud_fils.getAttribute("Latitude")),
+															Double.parseDouble(noeud_fils.getAttribute("Longitude")))
+												< Distance(Double.parseDouble(_graphe.getNode(depart).getAttribute("Latitude")),
+														Double.parseDouble(_graphe.getNode(depart).getAttribute("Longitude")),
+														Double.parseDouble(noeud_fils.getAttribute("Latitude")),
+														Double.parseDouble(noeud_fils.getAttribute("Longitude"))) )//
+					{
+						tab_poids[indice_fils][0] = tab_poids[indice_pere][0] + (int)Distance(Double.parseDouble(noeud_pere.getAttribute("Latitude")),
+																						Double.parseDouble(noeud_pere.getAttribute("Longitude")),
+																						Double.parseDouble(noeud_fils.getAttribute("Latitude")),
+																						Double.parseDouble(noeud_fils.getAttribute("Longitude")));
+						antecedent[indice_fils] = noeud_pere.getAttribute("Nom");
+					}
+			}
+			noeud_pere = NoeudSuivant(tab_poids, antecedent);
+		}
 	}
 
+	Node NoeudSuivant(int[][] tab_poids, String[] antecedent)
+	{
+		int pos = 0;
+		int minimum=1000000000;
+		for(int i=0;i<tab_poids.length;i++)
+			if(tab_poids[i][0] > 0)
+				if((tab_poids[i][0] < minimum) && (tab_poids[i][1] == 0))
+				{
+					minimum = tab_poids[i][0];
+					pos = i;
+				}
+		return _graphe.getNode(pos);
+	}
+
+	int RecuperationIndiceNoeud(Node n)
+	{
+		int i;
+		for(i=0;i<_graphe.getNodeCount();i++)
+			if(_graphe.getNode(i).equals(n))
+				return i;
+		return -1;
+	}
+
+	public void InitDij(int[][] tab_poids, String[] antecedent, String depart)
+	{
+		for(int i=0; i < _graphe.getNodeCount();i++)
+		{
+			if(_graphe.getNode(i).getAttribute("Nom", String.class).compareTo(depart) == 0)
+			{
+				tab_poids[i][0] = 0;
+				tab_poids[i][1] = 1;
+			}
+			else
+			{
+				tab_poids[i][0] = -1;
+				tab_poids[i][1] = 0;
+			}
+			antecedent[i] = "";
+		}
+	}
+
+	/*
 	//A vol d'oiseau
 	public ArrayList<Ville> Astar(Ville depart, Ville arrivee)
 	{
@@ -377,10 +451,10 @@ public class Graphe
 				DejaExplore.add(X);
 
 
-
+			}
 		}
 	}
-
+	*/
 	//cout a vol d'oiseau
 	public double CoutAstar(Ville depart, Ville arrivee, Ville ville){
 		double cout = 1000000;
