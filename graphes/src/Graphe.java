@@ -436,27 +436,6 @@ public class Graphe
 
 
 	//A vol d'oiseau
-	/*
-	public ArrayList<Ville> Astar(Ville depart, Ville arrivee)
-	{
-		ArrayList<Ville> aExplorer = new ArrayList<Ville>();
-		ArrayList<Ville> DejaExplore = new ArrayList<Ville>();
-		aExplorer.add(depart);
-
-		while((aExplorer.size() > 0) && !(aExplorer.contains(arrivee))){
-			Ville X = aExplorer.get(0);
-			for(int i = 0; i < aExplorer.size(); i++){
-				if(CoutAstar(depart, arrivee, aExplorer.get(i)) <= CoutAstar(depart, arrivee, X)){
-					X = aExplorer.get(i); //On récupere la ville du tableau aExplorer avec le cout minimum
-				}
-				DejaExplore.add(X);
-
-
-			}
-		}
-	}
-	*/
-
 	public void Astar(String depart, String arrivee)
 	{
 		double[][] tab_poids = new double[_graphe.getNodeCount()][2];//colonne 1 --> coutAstar, colonne 2 --> indice predecesseur courant
