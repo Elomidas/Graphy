@@ -511,23 +511,21 @@ public class Graphe
 
 				noeud_fils = e.getOpposite(noeud_pere);// on récupère le fils
 
-				int f = RecuperationIndiceNoeud(noeud_fils);
-				int p = RecuperationIndiceNoeud(noeud_pere);
+				if(!(DejaExplore.contains(noeud_fils.getAttribute("nom")))) {
 
-				if(aExplorer.contains(noeud_fils.getAttribute("nom")))
-				{
-					if(CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils) < tab_poids[f][0])
-					{
+					int f = RecuperationIndiceNoeud(noeud_fils);
+					int p = RecuperationIndiceNoeud(noeud_pere);
+
+					if (aExplorer.contains(noeud_fils.getAttribute("nom"))) {
+						if (CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils) < tab_poids[f][0]) {
+							tab_poids[f][0] = CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils);
+							tab_poids[f][1] = p;
+						}
+					} else {
+						aExplorer.add(noeud_fils.getAttribute("nom"));
 						tab_poids[f][0] = CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils);
 						tab_poids[f][1] = p;
 					}
-				}
-
-				else
-				{
-					aExplorer.add(noeud_fils.getAttribute("nom"));
-					tab_poids[f][0] = CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils);
-					tab_poids[f][1] = p;
 				}
 
 			}
