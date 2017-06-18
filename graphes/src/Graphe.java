@@ -364,33 +364,98 @@ public class Graphe
 		String[] antecedent = new String[_graphe.getNodeCount()];//Antecedent du noeud associe
 		InitDij(tab_poids, antecedent, depart);
 		Node noeud_fils;
-		Node noeud_pere = _graphe.getNode(depart);
-		while(!noeud_pere.getAttribute("Nom").equals(arrivee))
+		Node noeud_pere = GetNodeString(depart);
+		//System.out.println(noeud_pere.getAttribute("Nom") + "");
+		/*
+		try {
+			Thread.sleep(10000000);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		*/
+		while((noeud_pere.getAttribute("Nom")+ "").compareTo(arrivee) != 0)
 		{
+			//System.out.println("test1");
 			for(Edge e : noeud_pere.getEachEdge()) // pour chaque liaison du noeud
 			{
+				//System.out.println("test2");
 				noeud_fils = e.getOpposite(noeud_pere);// on récupère le fils
 				int indice_fils = RecuperationIndiceNoeud(noeud_fils);
 				int indice_pere = RecuperationIndiceNoeud(noeud_pere);
+				/*
+				System.out.println(Distance(Double.parseDouble(noeud_pere.getAttribute("Latitude")),
+															Double.parseDouble(noeud_pere.getAttribute("Longitude")),
+															Double.parseDouble(noeud_fils.getAttribute("Latitude")),
+															Double.parseDouble(noeud_fils.getAttribute("Longitude"))));
+				System.out.println(Distance(Double.parseDouble(GetNodeString(depart).getAttribute("Latitude")),
+														Double.parseDouble(GetNodeString(depart).getAttribute("Longitude")),
+														Double.parseDouble(noeud_fils.getAttribute("Latitude")),
+														Double.parseDouble(noeud_fils.getAttribute("Longitude"))) );
+				*/
 				if(tab_poids[indice_fils][1] == 0)//Si on est jamais passé par ce noeud
-					if(tab_poids[indice_pere][0]+ Distance(Double.parseDouble(noeud_pere.getAttribute("Latitude")),
+					if(tab_poids[indice_fils][0] == -1 || tab_poids[indice_pere][0]+ Distance(Double.parseDouble(noeud_pere.getAttribute("Latitude")),
 															Double.parseDouble(noeud_pere.getAttribute("Longitude")),
 															Double.parseDouble(noeud_fils.getAttribute("Latitude")),
 															Double.parseDouble(noeud_fils.getAttribute("Longitude")))
-												< Distance(Double.parseDouble(_graphe.getNode(depart).getAttribute("Latitude")),
-														Double.parseDouble(_graphe.getNode(depart).getAttribute("Longitude")),
-														Double.parseDouble(noeud_fils.getAttribute("Latitude")),
-														Double.parseDouble(noeud_fils.getAttribute("Longitude"))) )//
+												< tab_poids[indice_fils][0] )//
 					{
 						tab_poids[indice_fils][0] = tab_poids[indice_pere][0] + (int)Distance(Double.parseDouble(noeud_pere.getAttribute("Latitude")),
 																						Double.parseDouble(noeud_pere.getAttribute("Longitude")),
 																						Double.parseDouble(noeud_fils.getAttribute("Latitude")),
 																						Double.parseDouble(noeud_fils.getAttribute("Longitude")));
-						antecedent[indice_fils] = noeud_pere.getAttribute("Nom");
+						antecedent[indice_fils] = noeud_pere.getAttribute("Nom") + "";
 					}
+				//System.out.println("test3");
+				//System.out.println("Noeud pere : " + noeud_pere.getAttribute("Nom"));
+				//System.out.println("Noeud fils : " + noeud_fils.getAttribute("Nom"));
+				/*
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				*/
 			}
 			noeud_pere = NoeudSuivant(tab_poids, antecedent);
+			tab_poids[RecuperationIndiceNoeud(noeud_pere)][1] = 1;
+
+			//System.out.println("test3");
 		}
+
+		System.out.println("Algorithme de Dijkstra de " + depart + " vers " + arrivee + ".");
+		int km=tab_poids[RecuperationIndiceNoeud(noeud_pere)][0];
+		System.out.println("La duree du parcours est de " + km + " kilometres.");
+		String[] villes;
+		String ville = arrivee;
+		int i=1;
+		while(ville.compareTo(depart) != 0)
+		{
+			i++;
+			ville = antecedent[RecuperationIndiceNoeud(GetNodeString(ville))];
+		}
+		ville = arrivee;
+		villes = new String[i];
+		for(int index=0;index<i;index++)
+		{
+			villes[index] = ville;
+			ville = antecedent[RecuperationIndiceNoeud(GetNodeString(ville))];
+		}
+		int pos=1;
+		for(int index = i-1;index>=0;index--)
+		{
+			System.out.println("La " + pos + "e ville traversee est : " + villes[index] + ".");
+			pos++;
+		}
+	}
+
+	Node GetNodeString(String depart)
+	{
+		for(int i=0;i<_graphe.getNodeCount();i++)
+			if(_graphe.getNode(i).getAttribute("Nom").equals(depart))
+				return _graphe.getNode(i);
+		return null;
 	}
 
 	Node NoeudSuivant(int[][] tab_poids, String[] antecedent)
@@ -399,7 +464,7 @@ public class Graphe
 		int minimum=1000000000;
 		for(int i=0;i<tab_poids.length;i++)
 			if(tab_poids[i][0] > 0)
-				if((tab_poids[i][0] < minimum) && (tab_poids[i][1] == 0))
+				if((tab_poids[i][0] <= minimum) && (tab_poids[i][1] == 0))
 				{
 					minimum = tab_poids[i][0];
 					pos = i;
