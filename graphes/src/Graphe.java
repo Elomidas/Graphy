@@ -1,4 +1,9 @@
+import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import org.graphstream.graph.Graph;
@@ -16,6 +21,8 @@ public class Graphe
 	//Coordonnées utiles à l'affichage
 	protected double _longitudeMinimum;
 	protected double _latitudeMinimum;
+	//Clé d'API
+	protected static final String _cle = "AIzaSyCQEUEgOb-E14qKKnTi5mPnhHzT_DT5oBc";
 
 	//Encadrement de la France métropolitaine
 	protected static final double _latMax = 51.248163159055906;
@@ -225,22 +232,24 @@ public class Graphe
 	//1 : On ne relie que les villes qui ne sont pas trop éloignées
 	public void Liaisons()
 	{
-		Liaisons(_distance);
+		Liaisons(_distance, true);
 	}
 
-	public void Liaisons(int distance)
+	//Calcul la distance à vol d'oiseau si vol = true, par la route sinon
+	public void Liaisons(int distance, boolean vol)
 	{
 		new Thread()
 		{
 			public void run()
 			{
-				Arretes(distance);
+				Arretes(distance, vol);
 			}
 		}.start();
 	}
 
-	protected void Arretes(int distance)
+	protected void Arretes(int distance, boolean vol)
 	{
+		System.out.println("Vol : " + vol);
 		if(distance < 0)
 			distance = _distance;
 		int taille = _graphe.getNodeCount();
@@ -252,10 +261,14 @@ public class Graphe
 				Node n2 = _graphe.getNode(j);
 				//On ajoute un arc entre les sommets
 				//si les villes sont assez proches
-				if(Distance(Double.parseDouble(n1.getAttribute("Latitude")),
+				double dist = 0.0;
+				if(vol)
+					dist = Distance(Double.parseDouble(n1.getAttribute("Latitude")),
 							Double.parseDouble(n1.getAttribute("Longitude")),
 							Double.parseDouble(n2.getAttribute("Latitude")),
-							Double.parseDouble(n2.getAttribute("Longitude"))) <= distance)
+							Double.parseDouble(n2.getAttribute("Longitude")));
+				else dist = Distance(n1.getAttribute("Nom"), n2.getAttribute("Nom"));
+				if(dist <= distance)
 					_graphe.addEdge(i + "-" + j, i, j);
 			}
 			_controller.setProgress(-1, i / ((double)taille), -1);
@@ -315,6 +328,7 @@ public class Graphe
         return (Math.PI * angle) / 180.0;
 	}
 
+	//Distance en km entre 2 positions
 	protected static double Distance(double lat1, double lon1, double lat2, double lon2)
 	{
 
@@ -326,6 +340,58 @@ public class Graphe
 	    double lon_b = toRad(lon2);
 
 	    return r * (Math.PI/2 - Math.asin(Math.sin(lat_b) * Math.sin(lat_a) + Math.cos(lon_b - lon_a) * Math.cos(lat_b) * Math.cos(lat_a)));
+	}
+
+	//Distance en km entre deux villes, en suivant la route
+	//Assez long
+	protected static double Distance(String ville1, String ville2)
+	{
+		//
+		String nom1 = ville1.replace(" ", "+");
+		String nom2 = ville2.replace(" ", "+");
+		nom1 += "+,+France";
+		nom2 += "+,+France";
+		String requete = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="
+						 + nom1
+						 + "&destinations="
+						 + nom2
+						 + "&key="
+						 + _cle;
+		URL oracle;
+		boolean b_dist = false;
+		try
+		{
+			oracle = new URL(requete);
+	        BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
+            String inputLine;
+            while ((inputLine = in.readLine()) != null)
+            {
+                if((!b_dist) && inputLine.contains("distance"))
+                	b_dist = true;
+                else if(b_dist)
+                {
+                	if(inputLine.contains("value"))
+                	{
+                		String val = "";
+                		for(int i = 0; i < inputLine.length(); i++)
+                		{
+                			char c = inputLine.charAt(i);
+                			if((c >= '0') && (c <= '9'))
+                				val += c;
+                		}
+                		return Double.parseDouble(val) / 1000.0;
+                	}
+                }
+            }
+            in.close();
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			System.out.println(requete);
+			e.printStackTrace();
+		}
+		return 0;
 	}
 
 	//Donne des positions aux sommets pour les afficher
@@ -340,17 +406,6 @@ public class Graphe
 		//On calcul les positions des sommets
 		for(Node n : _graphe)
 		{
-			/*
-			//Hauteur
-			int h = (int)(hauteur * (_latitudeMaximum - Double.parseDouble(n.getAttribute("Latitude"))) / dh);
-			//Largeur
-			int l = (int)(largeur * (Double.parseDouble(n.getAttribute("Longitude")) - _longitudeMinimum) / dl);
-			System.out.println("Position : " + l + ", " + h);
-			*/
-			/*
-			int h = (int)(1000 * Double.parseDouble(n.getAttribute("Latitude")));
-			int l = (int)(1000 * Double.parseDouble(n.getAttribute("Longitude")));
-			*/
 			int[] pos = Position(n);
 			n.setAttribute("xyz", pos[0], pos[1], 0);
 			_controller.setProgress(-1, -1, compteur / taille);
