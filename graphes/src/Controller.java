@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -191,7 +192,8 @@ public class Controller extends Application
     					e.printStackTrace();
     				}
     			}
-				graphy.Liaisons(toInt(m_maxDist.getText()));
+    			ToggleGroup gr = m_pigeon.getToggleGroup();
+				graphy.Liaisons(toInt(m_maxDist.getText()), m_pigeon == gr.getSelectedToggle());
     			while(graphy.getEtape() < 2)
     			{
     				try

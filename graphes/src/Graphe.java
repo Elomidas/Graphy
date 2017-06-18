@@ -1,4 +1,9 @@
+import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import org.graphstream.graph.Graph;
@@ -16,6 +21,8 @@ public class Graphe
 	//Coordonnées utiles à l'affichage
 	protected double _longitudeMinimum;
 	protected double _latitudeMinimum;
+	//Clé d'API
+	protected static final String _cle = "AIzaSyCQEUEgOb-E14qKKnTi5mPnhHzT_DT5oBc";
 
 	//Encadrement de la France métropolitaine
 	protected static final double _latMax = 51.248163159055906;
@@ -225,22 +232,24 @@ public class Graphe
 	//1 : On ne relie que les villes qui ne sont pas trop éloignées
 	public void Liaisons()
 	{
-		Liaisons(_distance);
+		Liaisons(_distance, true);
 	}
 
-	public void Liaisons(int distance)
+	//Calcul la distance à vol d'oiseau si vol = true, par la route sinon
+	public void Liaisons(int distance, boolean vol)
 	{
 		new Thread()
 		{
 			public void run()
 			{
-				Arretes(distance);
+				Arretes(distance, vol);
 			}
 		}.start();
 	}
 
-	protected void Arretes(int distance)
+	protected void Arretes(int distance, boolean vol)
 	{
+		System.out.println("Vol : " + vol);
 		if(distance < 0)
 			distance = _distance;
 		int taille = _graphe.getNodeCount();
@@ -252,10 +261,14 @@ public class Graphe
 				Node n2 = _graphe.getNode(j);
 				//On ajoute un arc entre les sommets
 				//si les villes sont assez proches
-				if(Distance(Double.parseDouble(n1.getAttribute("Latitude")),
+				double dist = 0.0;
+				if(vol)
+					dist = Distance(Double.parseDouble(n1.getAttribute("Latitude")),
 							Double.parseDouble(n1.getAttribute("Longitude")),
 							Double.parseDouble(n2.getAttribute("Latitude")),
-							Double.parseDouble(n2.getAttribute("Longitude"))) <= distance)
+							Double.parseDouble(n2.getAttribute("Longitude")));
+				else dist = Distance(n1.getAttribute("Nom"), n2.getAttribute("Nom"));
+				if(dist <= distance)
 					_graphe.addEdge(i + "-" + j, i, j);
 			}
 			_controller.setProgress(-1, i / ((double)taille), -1);
@@ -315,6 +328,7 @@ public class Graphe
         return (Math.PI * angle) / 180.0;
 	}
 
+	//Distance en km entre 2 positions
 	protected static double Distance(double lat1, double lon1, double lat2, double lon2)
 	{
 
@@ -326,6 +340,58 @@ public class Graphe
 	    double lon_b = toRad(lon2);
 
 	    return r * (Math.PI/2 - Math.asin(Math.sin(lat_b) * Math.sin(lat_a) + Math.cos(lon_b - lon_a) * Math.cos(lat_b) * Math.cos(lat_a)));
+	}
+
+	//Distance en km entre deux villes, en suivant la route
+	//Assez long
+	protected static double Distance(String ville1, String ville2)
+	{
+		//
+		String nom1 = ville1.replace(" ", "+");
+		String nom2 = ville2.replace(" ", "+");
+		nom1 += "+,+France";
+		nom2 += "+,+France";
+		String requete = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="
+						 + nom1
+						 + "&destinations="
+						 + nom2
+						 + "&key="
+						 + _cle;
+		URL oracle;
+		boolean b_dist = false;
+		try
+		{
+			oracle = new URL(requete);
+	        BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
+            String inputLine;
+            while ((inputLine = in.readLine()) != null)
+            {
+                if((!b_dist) && inputLine.contains("distance"))
+                	b_dist = true;
+                else if(b_dist)
+                {
+                	if(inputLine.contains("value"))
+                	{
+                		String val = "";
+                		for(int i = 0; i < inputLine.length(); i++)
+                		{
+                			char c = inputLine.charAt(i);
+                			if((c >= '0') && (c <= '9'))
+                				val += c;
+                		}
+                		return Double.parseDouble(val) / 1000.0;
+                	}
+                }
+            }
+            in.close();
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			System.out.println(requete);
+			e.printStackTrace();
+		}
+		return 0;
 	}
 
 	//Donne des positions aux sommets pour les afficher
@@ -340,17 +406,6 @@ public class Graphe
 		//On calcul les positions des sommets
 		for(Node n : _graphe)
 		{
-			/*
-			//Hauteur
-			int h = (int)(hauteur * (_latitudeMaximum - Double.parseDouble(n.getAttribute("Latitude"))) / dh);
-			//Largeur
-			int l = (int)(largeur * (Double.parseDouble(n.getAttribute("Longitude")) - _longitudeMinimum) / dl);
-			System.out.println("Position : " + l + ", " + h);
-			*/
-			/*
-			int h = (int)(1000 * Double.parseDouble(n.getAttribute("Latitude")));
-			int l = (int)(1000 * Double.parseDouble(n.getAttribute("Longitude")));
-			*/
 			int[] pos = Position(n);
 			n.setAttribute("xyz", pos[0], pos[1], 0);
 			_controller.setProgress(-1, -1, compteur / taille);
@@ -499,41 +554,116 @@ public class Graphe
 		}
 	}
 
-	/*
+
 	//A vol d'oiseau
-	public ArrayList<Ville> Astar(Ville depart, Ville arrivee)
+	public void Astar(String depart, String arrivee)
 	{
-		ArrayList<Ville> aExplorer = new ArrayList<Ville>();
-		ArrayList<Ville> DejaExplore = new ArrayList<Ville>();
-		aExplorer.add(depart);
+		double[][] tab_poids = new double[_graphe.getNodeCount()][2];//colonne 1 --> coutAstar, colonne 2 --> indice predecesseur courant
+		InitAstar(tab_poids, depart);
 
-		while((aExplorer.size() > 0) && !(aExplorer.contains(arrivee))){
-			Ville X = aExplorer.get(0);
-			for(int i = 0; i < aExplorer.size(); i++){
-				if(CoutAstar(depart, arrivee, aExplorer.get(i)) <= CoutAstar(depart, arrivee, X)){
-					X = aExplorer.get(i); //On récupere la ville du tableau aExplorer avec le cout minimum
+		ArrayList<String> aExplorer = new ArrayList<>();
+		ArrayList<String> DejaExplore = new ArrayList<>();
+		DejaExplore.add(depart);
+
+		Node noeud_pere = _graphe.getNode(depart);
+		Node noeud_fils;
+
+		while((aExplorer.size() > 0) || !(aExplorer.contains(arrivee)))
+		{
+
+			for(Edge e : noeud_pere.getEachEdge()) // pour chaque liaison du noeud
+			{
+
+				noeud_fils = e.getOpposite(noeud_pere);// on récupère le fils
+
+				if(!(DejaExplore.contains(noeud_fils.getAttribute("nom")))) {
+
+					int f = RecuperationIndiceNoeud(noeud_fils);
+					int p = RecuperationIndiceNoeud(noeud_pere);
+
+					if (aExplorer.contains(noeud_fils.getAttribute("nom"))) {
+						if (CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils) < tab_poids[f][0]) {
+							tab_poids[f][0] = CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils);
+							tab_poids[f][1] = p;
+						}
+					} else {
+						aExplorer.add(noeud_fils.getAttribute("nom"));
+						tab_poids[f][0] = CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils);
+						tab_poids[f][1] = p;
+					}
 				}
-				DejaExplore.add(X);
-
 
 			}
+
+			String X = aExplorer.get(0);
+
+			if(aExplorer.size() > 1)
+			{
+
+				for (int i = 1; i < aExplorer.size(); i++)
+				{
+
+					int y = RecuperationIndiceNoeud(_graphe.getNode(aExplorer.get(i)));
+					int x = RecuperationIndiceNoeud(_graphe.getNode(X));
+
+					if (tab_poids[y][0] < tab_poids[x][0])
+					{
+						X = aExplorer.get(i); //On récupere la ville du tableau aExplorer avec le cout minimum
+					}
+
+				}
+			}
+
+			DejaExplore.add(X);
+			aExplorer.remove(X);
+			noeud_pere = _graphe.getNode(X);
+
+		}
+
+		if(aExplorer.size() > 0) {
+			DejaExplore.add(arrivee);
+		}
+
+		else{
+			System.out.println("pas de chemin possible entre ces 2 villes");
 		}
 	}
-	*/
+
 	//cout a vol d'oiseau
-	public double CoutAstar(Ville depart, Ville arrivee, Ville ville){
-		double cout = 1000000;
+	public double CoutAstar(Node antecedant, Node arrivee,Node ville){
+		double cout = 1000000000;
 
-		/*double distanceDepart = Distance(depart.getCoord().getLatitude(), depart.getCoord().getLongitude(),
-		ville.getCoord().getLatitude(), ville.getCoord().getLongitude());
+		double distanceAntecedant = Distance(Double.parseDouble(antecedant.getAttribute("Latitude")),
+				Double.parseDouble(antecedant.getAttribute("Longitude")),
+				Double.parseDouble(ville.getAttribute("Latitude")),
+				Double.parseDouble(ville.getAttribute("Longitude")));
 
-		double distanceArrivee = Distance(arrivee.getCoord().getLatitude(), arrivee.getCoord().getLongitude(),
-				ville.getCoord().getLatitude(), ville.getCoord().getLongitude());
+		double distanceArrivee = Distance(Double.parseDouble(ville.getAttribute("Latitude")),
+				Double.parseDouble(ville.getAttribute("Longitude")),
+				Double.parseDouble(arrivee.getAttribute("Latitude")),
+				Double.parseDouble(arrivee.getAttribute("Longitude")));
 
-		cout = distanceDepart + distanceArrivee;
-		*/
+		cout = distanceAntecedant + distanceArrivee;
+
 
 		return(cout);
+	}
+
+	public void InitAstar(double[][] tab_poids, String depart)
+	{
+		for(int i=0; i < _graphe.getNodeCount();i++)
+		{
+			if(_graphe.getNode(i).getAttribute("Nom", String.class).compareTo(depart) == 0)
+			{
+				tab_poids[i][0] = 0;	//poids
+				tab_poids[i][1] = -1;	//indice du predecesseur (pas de predecesseur)
+			}
+			else
+			{
+				tab_poids[i][0] = 1000000000;
+				tab_poids[i][1] = -1;
+			}
+		}
 	}
 
 }
