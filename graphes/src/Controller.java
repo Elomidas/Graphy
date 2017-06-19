@@ -32,6 +32,9 @@ public class Controller extends Application
     protected Button m_valider;
 
     @FXML
+    protected Label m_unite;
+
+    @FXML
     protected TextField m_minHab;
 
     @FXML
@@ -42,6 +45,9 @@ public class Controller extends Application
 
     @FXML
     protected RadioButton m_coccinelle;
+
+    @FXML
+    protected RadioButton m_lapin;
 
     @FXML
     protected ProgressBar m_pConstr;
@@ -312,7 +318,8 @@ public class Controller extends Application
     				}
     			}
     			ToggleGroup gr = m_pigeon.getToggleGroup();
-				m_graphy.Liaisons(toInt(m_maxDist.getText()), m_pigeon == gr.getSelectedToggle());
+				m_graphy.Liaisons(toInt(m_maxDist.getText()),
+									((m_pigeon == gr.getSelectedToggle()) ? 1 : ((m_pigeon == gr.getSelectedToggle()) ? 2 : 3)));
     			while(m_graphy.getEtape() < 2)
     			{
     				try
@@ -324,12 +331,14 @@ public class Controller extends Application
     					e.printStackTrace();
     				}
     			}
-				m_graphy.AfficherInfos();
+				Infos();
 				m_graphy.Positionner(500, 500);
 				Afficher();
 				CloseLoad();
 	        	m_AStar.setDisable(false);
 	        	m_dijkstra.setDisable(false);
+	        	m_villedep.setDisable(false);
+	        	m_villearr.setDisable(false);
     		}
     	}.start();
     }
@@ -348,6 +357,26 @@ public class Controller extends Application
 		    		m_pSlice.setProgress(p3);
 	    	}
     	});
+    }
+
+    protected void Infos()
+    {
+    	Platform.runLater(() ->
+    	{
+	    	Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Graphe créé");
+			alert.setHeaderText(m_graphy.GetInfos());
+			alert.show();
+    	});
+    }
+
+    @FXML
+    public void AffUnite()
+    {
+    	ToggleGroup gr = m_pigeon.getToggleGroup();
+    	if(m_lapin == gr.getSelectedToggle())
+    		m_unite.setText("Temps de trajet max (s)");
+    	else m_unite.setText("Distance maximum (km)");
     }
 
     public void Afficher()

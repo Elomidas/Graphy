@@ -1,8 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -10,6 +8,7 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.*;
+import org.graphstream.ui.view.Viewer;
 
 public class Graphe
 {
@@ -208,7 +207,7 @@ public class Graphe
 
 	public void AfficherGUI()
 	{
-		_graphe.display(false);
+		_graphe.display(false).setCloseFramePolicy(Viewer.CloseFramePolicy.CLOSE_VIEWER);
 	}
 
 	public void Afficher()
@@ -222,21 +221,21 @@ public class Graphe
 		}
 	}
 
-	public void AfficherInfos()
+	public String GetInfos()
 	{
-		System.out.println(_graphe.getNodeCount() + " villes chargées.\n" +
-						   _graphe.getEdgeCount() + " liaisons.");
+		return _graphe.getNodeCount() + " villes chargées.\n" +
+			   _graphe.getEdgeCount() + " liaisons.";
 	}
 
 	//Fonctions de création des liaisons
 	//1 : On ne relie que les villes qui ne sont pas trop éloignées
 	public void Liaisons()
 	{
-		Liaisons(_distance, true);
+		Liaisons(_distance, 1);
 	}
 
-	//Calcul la distance à vol d'oiseau si vol = true, par la route sinon
-	public void Liaisons(int distance, boolean vol)
+	//Calcul la distance à vol d'oiseau si vol = 1, par la route si vol = 2, on regarde le temps sinon
+	public void Liaisons(int distance, int vol)
 	{
 		new Thread()
 		{
@@ -247,9 +246,8 @@ public class Graphe
 		}.start();
 	}
 
-	protected void Arretes(int distance, boolean vol)
+	protected void Arretes(int distance, int vol)
 	{
-		System.out.println("Vol : " + vol);
 		if(distance < 0)
 			distance = _distance;
 		int taille = _graphe.getNodeCount();
@@ -262,12 +260,15 @@ public class Graphe
 				//On ajoute un arc entre les sommets
 				//si les villes sont assez proches
 				double dist = 0.0;
-				if(vol)
+				if(vol == 1)
 					dist = Distance(Double.parseDouble(n1.getAttribute("Latitude")),
 							Double.parseDouble(n1.getAttribute("Longitude")),
 							Double.parseDouble(n2.getAttribute("Latitude")),
 							Double.parseDouble(n2.getAttribute("Longitude")));
-				else dist = Distance(n1.getAttribute("Nom"), n2.getAttribute("Nom"));
+				else if(vol == 2)
+					dist = Distance(n1.getAttribute("Nom"), n2.getAttribute("Nom"));
+				else
+					dist = Temps(n1.getAttribute("Nom"), n2.getAttribute("Nom"));
 				if(dist <= distance)
 					_graphe.addEdge(i + "-" + j, i, j);
 			}
@@ -349,6 +350,13 @@ public class Graphe
 		return ParseJson(ville1, ville2, "distance");
 	}
 
+	//Temps de trajet en secondes entre deux villes, en suivant la route
+	//Assez long
+	protected static double Temps(String ville1, String ville2)
+	{
+		return ParseJson(ville1, ville2, "duration");
+	}
+
 	protected static double ParseJson(String ville1, String ville2, String id)
 	{
 		String nom1 = ville1.replace(" ", "+");
@@ -361,6 +369,7 @@ public class Graphe
 						 + nom2
 						 + "&key="
 						 + _cle;
+		System.out.println(requete);
 		URL oracle;
 		boolean b_id = false;
 		try
