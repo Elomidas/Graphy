@@ -548,14 +548,15 @@ public class Graphe
 		arrivee = arrivee.toUpperCase();
 		ArrayList<String> aExplorer = new ArrayList<String>();
 		ArrayList<String> DejaExplore = new ArrayList<String>();
-		DejaExplore.add(depart);
+		//DejaExplore.add(depart);
+		aExplorer.add(depart);
 
 		Node noeud_pere = GetNodeString(depart);/*_graphe.getNode(depart);*/
 		Node noeud_fils;
 
 		System.out.println("taille : " + aExplorer.size());
 
-		while((aExplorer.size() > 0) || !(DejaExplore.contains(arrivee)))
+		while((aExplorer.size() > 0) && !(DejaExplore.contains(arrivee)))
 		{
 
 
@@ -606,6 +607,7 @@ public class Graphe
 				}
 			}
 
+			System.out.println(X);
 			noeud_pere = GetNodeString(X);
 			DejaExplore.add(X);
 			aExplorer.remove(X);
