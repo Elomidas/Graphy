@@ -6,12 +6,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -50,7 +52,41 @@ public class Controller extends Application
     @FXML
     protected ProgressBar m_pSlice;
 
+    @FXML
+    protected Button m_dijkstra;
+
+    @FXML
+    protected Button m_AStar;
+
+    @FXML
+    protected TextField m_villedep;
+
+    @FXML
+    protected TextField m_villearr;
+
 	protected static final String chemin = "data/CommunesFrance.csv";
+	private Graphe m_graphy;
+
+	private String m_titleDij, m_msgDij;
+
+	public String GetTitleDij()
+	{
+		return m_titleDij;
+	}
+
+	public void SetTitleDij(String title)
+	{
+		m_titleDij = title;
+	}
+
+	public String GetMsgDij()
+	{
+		return m_msgDij;
+	}
+	public void SetMsgDij(String msg)
+	{
+		m_msgDij = msg;
+	}
 
     @Override
     public void start(Stage primStg) throws Exception
@@ -60,6 +96,7 @@ public class Controller extends Application
         	m_progress = false;
             this.primaryStage = primStg;
             primaryStage.setTitle("Graphy");
+
 
             // Permet l'arret du programme lorsque la fenêtre est quitée
             primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>()
@@ -71,6 +108,7 @@ public class Controller extends Application
 	                    System.exit(0);
 	                }
 	            });
+
 
             // Chargement du rootLayout
             FXMLLoader loader = new FXMLLoader();
@@ -172,16 +210,77 @@ public class Controller extends Application
     }
 
     @FXML
+    public void handleDijkstra()
+    {
+
+    		String villedep, villearr;
+
+        	villedep = m_villedep.getText();
+        	villearr = m_villearr.getText();
+        	new Thread()
+        	{
+        		@Override
+        		public void run()
+        		{
+        			int coderep;
+
+        			m_titleDij = "";
+            		m_msgDij = "";
+        			coderep = m_graphy.Dijkstra(villedep, villearr);
+        			System.out.println(m_titleDij);
+        			Platform.runLater(() ->
+        	    	{
+	        			if(coderep == 1)
+	        			{
+	        				Alert alert = new Alert(AlertType.INFORMATION);
+	            			alert.setTitle(m_titleDij);
+	            			alert.setHeaderText(m_msgDij);
+	            			alert.show();
+	        			}
+	        			else if(coderep==2)
+	        			{
+	        				Alert alert = new Alert(AlertType.WARNING);
+	            			alert.setTitle("Erreur ville de départ !");
+	            			alert.setHeaderText("La ville de départ n'est pas présente sur le graphe.");
+	            			alert.show();
+	        			}
+	        			else if(coderep==3)
+	        			{
+	        				Alert alert = new Alert(AlertType.WARNING);
+	            			alert.setTitle("Erreur ville d'arrivée !");
+	            			alert.setHeaderText("La ville d'arrivée n'est pas présente sur le graphe.");
+	            			alert.show();
+	        			}
+	        			else if(coderep==4)
+	        			{
+	        				Alert alert = new Alert(AlertType.INFORMATION);
+	            			alert.setTitle("Pas de chemin possible !");
+	            			alert.setHeaderText("Il n'existe pas de chemin entre la ville d'arrivée et la ville de départ.");
+	            			alert.show();
+	        			}
+	        			else if(coderep==5)
+	        			{
+	        				Alert alert = new Alert(AlertType.WARNING);
+	            			alert.setTitle("Erreur ville de départ et ville d'arrivée !");
+	            			alert.setHeaderText("La ville de départ et d'arrivée ne sont pas présentes sur le graphe.");
+	            			alert.show();
+	        			}
+        	    	});
+        		}
+        	}.start();
+    }
+
+    @FXML
     public void handleValider() throws IOException
     {
     	System.out.println("Chargement des communes");
     	LoadFenetre();
-    	Graphe graphy = new Graphe(chemin, toInt(m_minHab.getText()), this);
+    	m_graphy = new Graphe(chemin, toInt(m_minHab.getText()), this);
     	new Thread()
     	{
     		public void run()
     		{
-    			while(graphy.getEtape() < 1)
+    			while(m_graphy.getEtape() < 1)
     			{
     				try
     				{
@@ -193,8 +292,8 @@ public class Controller extends Application
     				}
     			}
     			ToggleGroup gr = m_pigeon.getToggleGroup();
-				graphy.Liaisons(toInt(m_maxDist.getText()), m_pigeon == gr.getSelectedToggle());
-    			while(graphy.getEtape() < 2)
+				m_graphy.Liaisons(toInt(m_maxDist.getText()), m_pigeon == gr.getSelectedToggle());
+    			while(m_graphy.getEtape() < 2)
     			{
     				try
     				{
@@ -205,11 +304,11 @@ public class Controller extends Application
     					e.printStackTrace();
     				}
     			}
-				graphy.AfficherInfos();
-				graphy.Positionner(500, 500);
+				m_graphy.AfficherInfos();
+				m_graphy.Positionner(500, 500);
 				CloseLoad();
-				graphy.Astar("PARIS", "MARSEILLE");
-				Afficher(graphy);
+				Afficher();
+				m_dijkstra.setDisable(false);
     		}
     	}.start();
     }
@@ -230,11 +329,11 @@ public class Controller extends Application
     	});
     }
 
-    public void Afficher(Graphe graphy)
+    public void Afficher()
     {
     	Platform.runLater(() ->
     	{
-    		graphy.AfficherGUI();
+    		m_graphy.AfficherGUI();
     	});
     }
 
