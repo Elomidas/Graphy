@@ -271,6 +271,26 @@ public class Controller extends Application
     }
 
     @FXML
+    public void handleAStar()
+    {
+
+    		String villedep, villearr;
+
+        	villedep = m_villedep.getText();
+        	villearr = m_villearr.getText();
+        	m_AStar.setDisable(true);
+        	new Thread()
+        	{
+        		@Override
+        		public void run()
+        		{
+        			m_graphy.Astar(villedep, villearr);
+    	        	m_AStar.setDisable(false);
+        		}
+        	}.start();
+    }
+
+    @FXML
     public void handleValider() throws IOException
     {
     	System.out.println("Chargement des communes");
@@ -306,10 +326,10 @@ public class Controller extends Application
     			}
 				m_graphy.AfficherInfos();
 				m_graphy.Positionner(500, 500);
-				CloseLoad();
-				m_graphy.Astar("PARIS","MARSEILLE");
 				Afficher();
-				m_dijkstra.setDisable(false);
+				CloseLoad();
+	        	m_AStar.setDisable(false);
+	        	m_dijkstra.setDisable(false);
     		}
     	}.start();
     }

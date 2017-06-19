@@ -346,7 +346,11 @@ public class Graphe
 	//Assez long
 	protected static double Distance(String ville1, String ville2)
 	{
-		//
+		return ParseJson(ville1, ville2, "distance");
+	}
+
+	protected static double ParseJson(String ville1, String ville2, String id)
+	{
 		String nom1 = ville1.replace(" ", "+");
 		String nom2 = ville2.replace(" ", "+");
 		nom1 += "+,+France";
@@ -358,7 +362,7 @@ public class Graphe
 						 + "&key="
 						 + _cle;
 		URL oracle;
-		boolean b_dist = false;
+		boolean b_id = false;
 		try
 		{
 			oracle = new URL(requete);
@@ -366,9 +370,9 @@ public class Graphe
             String inputLine;
             while ((inputLine = in.readLine()) != null)
             {
-                if((!b_dist) && inputLine.contains("distance"))
-                	b_dist = true;
-                else if(b_dist)
+                if((!b_id) && inputLine.contains(id))
+                	b_id = true;
+                else if(b_id)
                 {
                 	if(inputLine.contains("value"))
                 	{
@@ -387,7 +391,6 @@ public class Graphe
 		}
 		catch (Exception e)
 		{
-			// TODO Auto-generated catch block
 			System.out.println(requete);
 			e.printStackTrace();
 		}
@@ -398,8 +401,8 @@ public class Graphe
 	public void Positionner(double hauteur, double largeur)
 	{
 		//On calcule la largeur et la hauteur du graphe
-		double dh = DLongitude();
-		double dl = DLatitude();
+		DLongitude();
+		DLatitude();
 		int compteur = 0;
 		double taille = _graphe.getNodeCount();
 
@@ -541,39 +544,42 @@ public class Graphe
 	{
 		double[][] tab_poids = new double[_graphe.getNodeCount()][2];//colonne 1 --> coutAstar, colonne 2 --> indice predecesseur courant
 		InitAstar(tab_poids, depart);
-
-		ArrayList<String> aExplorer = new ArrayList<>();
-		ArrayList<String> DejaExplore = new ArrayList<>();
+		depart = depart.toUpperCase();
+		arrivee = arrivee.toUpperCase();
+		ArrayList<String> aExplorer = new ArrayList<String>();
+		ArrayList<String> DejaExplore = new ArrayList<String>();
 		DejaExplore.add(depart);
 
 		Node noeud_pere = GetNodeString(depart);/*_graphe.getNode(depart);*/
 		Node noeud_fils;
 
-		//System.out.println("testAvantWhile");
+		System.out.println("taille : " + aExplorer.size());
 
 		while((aExplorer.size() > 0) || !(DejaExplore.contains(arrivee)))
 		{
 
-			//System.out.println("testAvantFor");
 
 			for(Edge e : noeud_pere.getEachEdge()) // pour chaque liaison du noeud
 			{
-				//System.out.println("testApresFor");
 
 				noeud_fils = e.getOpposite(noeud_pere);// on récupère le fils
 
-				if(!(DejaExplore.contains(noeud_fils.getAttribute("nom")))) {
+				if(!(DejaExplore.contains(noeud_fils.getAttribute("Nom")))) {
 
 					int f = RecuperationIndiceNoeud(noeud_fils);
 					int p = RecuperationIndiceNoeud(noeud_pere);
 
-					if (aExplorer.contains(noeud_fils.getAttribute("nom"))) {
+					if (aExplorer.contains(noeud_fils.getAttribute("Nom")))
+					{
+						//System.out.println("If 1");
 						if (CoutAstar(noeud_pere,GetNodeString(arrivee), noeud_fils) < tab_poids[f][0]) {
 							tab_poids[f][0] = CoutAstar(noeud_pere, GetNodeString(arrivee), noeud_fils);
 							tab_poids[f][1] = p;
 						}
-					} else {
-						aExplorer.add(noeud_fils.getAttribute("nom"));
+					}
+					else
+					{
+						aExplorer.add(noeud_fils.getAttribute("Nom"));
 						tab_poids[f][0] = CoutAstar(noeud_pere,GetNodeString(arrivee), noeud_fils);
 						tab_poids[f][1] = p;
 					}
