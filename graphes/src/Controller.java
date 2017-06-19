@@ -307,7 +307,7 @@ public class Controller extends Application
 				m_graphy.AfficherInfos();
 				m_graphy.Positionner(500, 500);
 				CloseLoad();
-				m_graphy.Astar("PARIS","MARSEILLE");
+				//m_graphy.Astar("PARIS","MARSEILLE");
 				Afficher();
 				m_dijkstra.setDisable(false);
     		}

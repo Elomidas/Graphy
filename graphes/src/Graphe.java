@@ -549,16 +549,16 @@ public class Graphe
 		Node noeud_pere = GetNodeString(depart);/*_graphe.getNode(depart);*/
 		Node noeud_fils;
 
-		System.out.println("testAvantWhile");
+		//System.out.println("testAvantWhile");
 
 		while((aExplorer.size() > 0) || !(DejaExplore.contains(arrivee)))
 		{
 
-			System.out.println("testAvantFor");
+			//System.out.println("testAvantFor");
 
 			for(Edge e : noeud_pere.getEachEdge()) // pour chaque liaison du noeud
 			{
-				System.out.println("testApresFor");
+				//System.out.println("testApresFor");
 
 				noeud_fils = e.getOpposite(noeud_pere);// on récupère le fils
 
@@ -604,7 +604,7 @@ public class Graphe
 			DejaExplore.add(X);
 			aExplorer.remove(X);
 
-			System.out.println("testFinWhile");
+			//System.out.println("testFinWhile");
 
 		}
 
