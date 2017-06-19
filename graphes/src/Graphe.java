@@ -565,14 +565,19 @@ public class Graphe
 		ArrayList<String> DejaExplore = new ArrayList<>();
 		DejaExplore.add(depart);
 
-		Node noeud_pere = _graphe.getNode(depart);
+		Node noeud_pere = GetNodeString(depart);/*_graphe.getNode(depart);*/
 		Node noeud_fils;
 
-		while((aExplorer.size() > 0) || !(aExplorer.contains(arrivee)))
+		System.out.println("testAvantWhile");
+
+		while((aExplorer.size() > 0) || !(DejaExplore.contains(arrivee)))
 		{
+
+			System.out.println("testAvantFor");
 
 			for(Edge e : noeud_pere.getEachEdge()) // pour chaque liaison du noeud
 			{
+				System.out.println("testApresFor");
 
 				noeud_fils = e.getOpposite(noeud_pere);// on récupère le fils
 
@@ -582,13 +587,13 @@ public class Graphe
 					int p = RecuperationIndiceNoeud(noeud_pere);
 
 					if (aExplorer.contains(noeud_fils.getAttribute("nom"))) {
-						if (CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils) < tab_poids[f][0]) {
-							tab_poids[f][0] = CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils);
+						if (CoutAstar(noeud_pere,GetNodeString(arrivee), noeud_fils) < tab_poids[f][0]) {
+							tab_poids[f][0] = CoutAstar(noeud_pere, GetNodeString(arrivee), noeud_fils);
 							tab_poids[f][1] = p;
 						}
 					} else {
 						aExplorer.add(noeud_fils.getAttribute("nom"));
-						tab_poids[f][0] = CoutAstar(noeud_pere, _graphe.getNode(arrivee), noeud_fils);
+						tab_poids[f][0] = CoutAstar(noeud_pere,GetNodeString(arrivee), noeud_fils);
 						tab_poids[f][1] = p;
 					}
 				}
@@ -603,8 +608,8 @@ public class Graphe
 				for (int i = 1; i < aExplorer.size(); i++)
 				{
 
-					int y = RecuperationIndiceNoeud(_graphe.getNode(aExplorer.get(i)));
-					int x = RecuperationIndiceNoeud(_graphe.getNode(X));
+					int y = RecuperationIndiceNoeud(GetNodeString(aExplorer.get(i)));
+					int x = RecuperationIndiceNoeud(GetNodeString(X));
 
 					if (tab_poids[y][0] < tab_poids[x][0])
 					{
@@ -614,19 +619,20 @@ public class Graphe
 				}
 			}
 
+			noeud_pere = GetNodeString(X);
 			DejaExplore.add(X);
 			aExplorer.remove(X);
-			noeud_pere = _graphe.getNode(X);
+
+			System.out.println("testFinWhile");
 
 		}
 
-		if(aExplorer.size() > 0) {
-			DejaExplore.add(arrivee);
-		}
-
-		else{
+		if(aExplorer.size() == 0) {
 			System.out.println("pas de chemin possible entre ces 2 villes");
 		}
+
+		else
+			System.out.println("testfin");
 	}
 
 	//cout a vol d'oiseau

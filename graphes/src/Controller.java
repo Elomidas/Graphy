@@ -208,7 +208,7 @@ public class Controller extends Application
 				graphy.AfficherInfos();
 				graphy.Positionner(500, 500);
 				CloseLoad();
-				graphy.Dijkstra("PARIS", "MARSEILLE");
+				graphy.Astar("PARIS", "MARSEILLE");
 				Afficher(graphy);
     		}
     	}.start();
