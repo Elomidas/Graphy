@@ -548,13 +548,10 @@ public class Graphe
 		arrivee = arrivee.toUpperCase();
 		ArrayList<String> aExplorer = new ArrayList<String>();
 		ArrayList<String> DejaExplore = new ArrayList<String>();
-		//DejaExplore.add(depart);
 		aExplorer.add(depart);
 
-		Node noeud_pere = GetNodeString(depart);/*_graphe.getNode(depart);*/
+		Node noeud_pere = GetNodeString(depart);
 		Node noeud_fils;
-
-		System.out.println("taille : " + aExplorer.size());
 
 		while((aExplorer.size() > 0) && !(DejaExplore.contains(arrivee)))
 		{
@@ -601,27 +598,27 @@ public class Graphe
 
 					if (tab_poids[y][0] < tab_poids[x][0])
 					{
-						X = aExplorer.get(i); //On récupere la ville du tableau aExplorer avec le cout minimum
+						X = aExplorer.get(i); //On recupere la ville du tableau aExplorer avec le cout minimum
 					}
 
 				}
 			}
 
-			System.out.println(X);
+			//System.out.println(X);				//Pour afficher le chemin parcouru en console
 			noeud_pere = GetNodeString(X);
 			DejaExplore.add(X);
 			aExplorer.remove(X);
 
-			//System.out.println("testFinWhile");
 
 		}
-
+/*
 		if(aExplorer.size() == 0) {
 			System.out.println("pas de chemin possible entre ces 2 villes");
 		}
 
 		else
 			System.out.println("testfin");
+*/
 	}
 
 	//cout a vol d'oiseau
