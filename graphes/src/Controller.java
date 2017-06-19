@@ -68,25 +68,32 @@ public class Controller extends Application
 	private Graphe m_graphy;
 
 	private String m_titleDij, m_msgDij;
+	private String m_titleAs, m_msgAs;
 
 	public String GetTitleDij()
 	{
 		return m_titleDij;
 	}
-
 	public void SetTitleDij(String title)
 	{
 		m_titleDij = title;
 	}
-
 	public String GetMsgDij()
 	{
 		return m_msgDij;
 	}
-	public void SetMsgDij(String msg)
+	public void SetMsgDij(String msg){m_msgDij = msg;}
+
+	public String GetTitleAs(){ return m_titleAs;}
+	public void SetTitleAs(String title)
 	{
-		m_msgDij = msg;
+		m_titleAs = title;
 	}
+	public String GetMsgAs()
+	{
+		return m_msgAs;
+	}
+	public void SetMsgAs(String msg) {m_msgAs = msg;}
 
     @Override
     public void start(Stage primStg) throws Exception

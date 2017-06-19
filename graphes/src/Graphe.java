@@ -611,6 +611,10 @@ public class Graphe
 
 
 		}
+
+		_controller.SetTitleAs("Algorithme de Dijkstra de " + depart + " vers " + arrivee + ".");
+		double km = tab_poids[RecuperationIndiceNoeud(noeud_pere)][0];
+		_controller.SetMsgAs("La duree du parcours est de " + km + " kilometres.\n");
 /*
 		if(aExplorer.size() == 0) {
 			System.out.println("pas de chemin possible entre ces 2 villes");
