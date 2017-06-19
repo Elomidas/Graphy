@@ -281,6 +281,63 @@ public class Controller extends Application
     public void handleAStar()
     {
 
+		String villedep, villearr;
+
+		villedep = m_villedep.getText();
+		villearr = m_villearr.getText();
+
+		new Thread()
+		{
+			@Override
+			public void run()
+			{
+				int coderep;
+
+				m_titleAs = "";
+				m_msgAs = "";
+				coderep = m_graphy.Astar(villedep, villearr);
+				System.out.println(m_titleAs);
+				Platform.runLater(() ->
+				{
+					if(coderep == 1)
+					{
+						Alert alert = new Alert(AlertType.INFORMATION);
+						alert.setTitle(m_titleAs);
+						alert.setHeaderText(m_msgAs);
+						alert.show();
+					}
+					else if(coderep==2)
+					{
+						Alert alert = new Alert(AlertType.WARNING);
+						alert.setTitle("Erreur ville de départ !");
+						alert.setHeaderText("La ville de départ n'est pas présente sur le graphe.");
+						alert.show();
+					}
+					else if(coderep==3)
+					{
+						Alert alert = new Alert(AlertType.WARNING);
+						alert.setTitle("Erreur ville d'arrivée !");
+						alert.setHeaderText("La ville d'arrivée n'est pas présente sur le graphe.");
+						alert.show();
+					}
+					else if(coderep==4)
+					{
+						Alert alert = new Alert(AlertType.INFORMATION);
+						alert.setTitle("Pas de chemin possible !");
+						alert.setHeaderText("Il n'existe pas de chemin entre la ville d'arrivée et la ville de départ.");
+						alert.show();
+					}
+					else if(coderep==5)
+					{
+						Alert alert = new Alert(AlertType.WARNING);
+						alert.setTitle("Erreur ville de départ et ville d'arrivée !");
+						alert.setHeaderText("La ville de départ et d'arrivée ne sont pas présentes sur le graphe.");
+						alert.show();
+					}
+				});
+			}
+		}.start();
+/*
     		String villedep, villearr;
 
         	villedep = m_villedep.getText();
@@ -295,6 +352,7 @@ public class Controller extends Application
     	        	m_AStar.setDisable(false);
         		}
         	}.start();
+*/
     }
 
     @FXML

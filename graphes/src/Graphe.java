@@ -540,12 +540,13 @@ public class Graphe
 
 
 	//A vol d'oiseau
-	public void Astar(String depart, String arrivee)
+	public int Astar(String depart, String arrivee)
 	{
 		double[][] tab_poids = new double[_graphe.getNodeCount()][2];//colonne 1 --> coutAstar, colonne 2 --> indice predecesseur courant
 		InitAstar(tab_poids, depart);
 		depart = depart.toUpperCase();
 		arrivee = arrivee.toUpperCase();
+		int km = 0; 									//nombre de km parcouru
 		ArrayList<String> aExplorer = new ArrayList<String>();
 		ArrayList<String> DejaExplore = new ArrayList<String>();
 		aExplorer.add(depart);
@@ -553,73 +554,89 @@ public class Graphe
 		Node noeud_pere = GetNodeString(depart);
 		Node noeud_fils;
 
-		while((aExplorer.size() > 0) && !(DejaExplore.contains(arrivee)))
-		{
+		if(GetNodeString(depart) == null)
+			if(GetNodeString(arrivee) == null)
+				return 5;
+			else
+				return 2;
+		else if(GetNodeString(arrivee) == null)
+			return 3;
+		else {
+
+			while ((aExplorer.size() > 0) && !(DejaExplore.contains(arrivee))) {
 
 
-			for(Edge e : noeud_pere.getEachEdge()) // pour chaque liaison du noeud
-			{
+				for (Edge e : noeud_pere.getEachEdge()) // pour chaque liaison du noeud
+				{
 
-				noeud_fils = e.getOpposite(noeud_pere);// on récupère le fils
+					noeud_fils = e.getOpposite(noeud_pere);// on récupère le fils
 
-				if(!(DejaExplore.contains(noeud_fils.getAttribute("Nom")))) {
+					if (!(DejaExplore.contains(noeud_fils.getAttribute("Nom")))) {
 
-					int f = RecuperationIndiceNoeud(noeud_fils);
-					int p = RecuperationIndiceNoeud(noeud_pere);
+						int f = RecuperationIndiceNoeud(noeud_fils);
+						int p = RecuperationIndiceNoeud(noeud_pere);
 
-					if (aExplorer.contains(noeud_fils.getAttribute("Nom")))
-					{
-						//System.out.println("If 1");
-						if (CoutAstar(noeud_pere,GetNodeString(arrivee), noeud_fils) < tab_poids[f][0]) {
+						if (aExplorer.contains(noeud_fils.getAttribute("Nom"))) {
+							//System.out.println("If 1");
+							if (CoutAstar(noeud_pere, GetNodeString(arrivee), noeud_fils) < tab_poids[f][0]) {
+								tab_poids[f][0] = CoutAstar(noeud_pere, GetNodeString(arrivee), noeud_fils);
+								tab_poids[f][1] = p;
+							}
+						} else {
+							aExplorer.add(noeud_fils.getAttribute("Nom"));
 							tab_poids[f][0] = CoutAstar(noeud_pere, GetNodeString(arrivee), noeud_fils);
 							tab_poids[f][1] = p;
 						}
 					}
-					else
-					{
-						aExplorer.add(noeud_fils.getAttribute("Nom"));
-						tab_poids[f][0] = CoutAstar(noeud_pere,GetNodeString(arrivee), noeud_fils);
-						tab_poids[f][1] = p;
+
+				}
+
+				String X = aExplorer.get(0);
+
+				if (aExplorer.size() > 1) {
+
+					for (int i = 1; i < aExplorer.size(); i++) {
+
+						int y = RecuperationIndiceNoeud(GetNodeString(aExplorer.get(i)));
+						int x = RecuperationIndiceNoeud(GetNodeString(X));
+
+						if (tab_poids[y][0] < tab_poids[x][0]) {
+							X = aExplorer.get(i); //On recupere la ville du tableau aExplorer avec le cout minimum
+						}
+
 					}
 				}
 
+
+				//System.out.println(X);				//Pour afficher le chemin parcouru en console
+				km = km + (int)Distance(Double.parseDouble(noeud_pere.getAttribute("Latitude")),
+						Double.parseDouble(noeud_pere.getAttribute("Longitude")),
+						Double.parseDouble(GetNodeString(X).getAttribute("Latitude")),
+						Double.parseDouble(GetNodeString(X).getAttribute("Longitude")));
+				noeud_pere = GetNodeString(X);
+				DejaExplore.add(X);
+				aExplorer.remove(X);
+
+
 			}
-
-			String X = aExplorer.get(0);
-
-			if(aExplorer.size() > 1)
-			{
-
-				for (int i = 1; i < aExplorer.size(); i++)
-				{
-
-					int y = RecuperationIndiceNoeud(GetNodeString(aExplorer.get(i)));
-					int x = RecuperationIndiceNoeud(GetNodeString(X));
-
-					if (tab_poids[y][0] < tab_poids[x][0])
-					{
-						X = aExplorer.get(i); //On recupere la ville du tableau aExplorer avec le cout minimum
-					}
-
-				}
-			}
-
-			//System.out.println(X);				//Pour afficher le chemin parcouru en console
-			noeud_pere = GetNodeString(X);
-			DejaExplore.add(X);
-			aExplorer.remove(X);
-
-
 		}
 
-		_controller.SetTitleAs("Algorithme de Dijkstra de " + depart + " vers " + arrivee + ".");
-		double km = tab_poids[RecuperationIndiceNoeud(noeud_pere)][0];
-		_controller.SetMsgAs("La duree du parcours est de " + km + " kilometres.\n");
-/*
 		if(aExplorer.size() == 0) {
-			System.out.println("pas de chemin possible entre ces 2 villes");
+			return 4;
 		}
 
+		_controller.SetTitleAs("Algorithme A* de " + depart + " vers " + arrivee + ".");
+		_controller.SetMsgAs("La duree du parcours est de " + km + " kilometres.\n");
+		int pos = 1;
+		for(int index = 0; index < DejaExplore.size() ;index++)
+		{
+			_controller.SetMsgAs(_controller.GetMsgAs() + "La " + pos + "e ville traversee est : " + DejaExplore.get(index) + ".\n");
+			pos++;
+		}
+		return 1;
+
+
+/*
 		else
 			System.out.println("testfin");
 */
